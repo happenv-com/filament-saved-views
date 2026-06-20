@@ -39,6 +39,8 @@ trait HasSavedViews
             ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
             // @phpstan-ignore staticMethod.notFound
             ->where('class', static::getResource())
+            ->where('submenu_visible', true)
+            ->orderBy('sort_order')
             ->orderBy('label')
             ->get();
 
