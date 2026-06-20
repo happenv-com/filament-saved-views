@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(config('saved-views.table', 'saved_views'), function (Blueprint $table): void {
+        Schema::create(config('filament-happenv-saved-views.table', 'saved_views'), function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->nullable();
             $table->text('label')->nullable();
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(config('saved-views.table', 'saved_views'));
+        Schema::dropIfExists(config('filament-happenv-saved-views.table', 'saved_views'));
     }
 };

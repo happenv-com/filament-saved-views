@@ -36,7 +36,7 @@ trait HasSavedViews
     public function getSavedViewsNavigationItems(): array
     {
         $views = resolve(SavedView::class)::query()
-            ->where('user_id', Auth::guard(config('saved-views.guard'))->id())
+            ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
             // @phpstan-ignore staticMethod.notFound
             ->where('class', static::getResource())
             ->orderBy('label')
@@ -46,7 +46,7 @@ trait HasSavedViews
 
         foreach ($views as $view) {
             $items[] = NavigationItem::make($view->label)
-                ->icon(config('saved-views.icons.item'))
+                ->icon(config('filament-happenv-saved-views.icons.item'))
                 ->url($this->getUrlForSavedView($view))
                 ->isActiveWhen(fn (): bool => (string) original_request()->query('savedView') === (string) $view->id);
         }

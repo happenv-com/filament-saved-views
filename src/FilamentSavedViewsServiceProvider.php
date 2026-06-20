@@ -21,7 +21,7 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('filament-saved-views')
-            ->hasConfigFile('saved-views')
+            ->hasConfigFile('filament-happenv-saved-views')
             ->hasViews('filament-saved-views')
             ->hasTranslations()
             ->hasMigration('create_saved_views_table');
@@ -86,7 +86,7 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
             $action = Action::make('openSavedViewManager')
                 ->label(__('filament-saved-views::saved-views.label'))
                 ->iconButton()
-                ->icon(config('saved-views.icons.manager'))
+                ->icon(config('filament-happenv-saved-views.icons.manager'))
                 ->color('gray')
                 ->livewireClickHandlerEnabled(false)
                 ->modalSubmitAction(false)

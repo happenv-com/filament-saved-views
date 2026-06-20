@@ -57,7 +57,7 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
         $view->filters = collect(is_array($filters) ? $filters : []);
         $view->search_term = is_string($params['tableSearch'] ?? null) ? $params['tableSearch'] : null;
         $view->label = $label;
-        $view->user_id = Auth::guard(config('saved-views.guard'))->id();
+        $view->user_id = Auth::guard(config('filament-happenv-saved-views.guard'))->id();
         $view->save();
 
         $this->redirect($this->urlFor($view));
@@ -73,7 +73,7 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
     {
         return Action::make('deleteView')
             ->label(__('filament-saved-views::saved-views.delete'))
-            ->icon(config('saved-views.icons.delete'))
+            ->icon(config('filament-happenv-saved-views.icons.delete'))
             ->iconButton()
             ->color('danger')
             ->size('sm')
@@ -88,7 +88,7 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
                 }
 
                 resolve(SavedView::class)::query()
-                    ->where('user_id', Auth::guard(config('saved-views.guard'))->id())
+                    ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
                     ->where('class', $this->resourceClass)
                     ->whereKey($id)
                     ->delete();
@@ -113,7 +113,7 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
     public function getViewsProperty(): Collection
     {
         return resolve(SavedView::class)::query()
-            ->where('user_id', Auth::guard(config('saved-views.guard'))->id())
+            ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
             ->where('class', $this->resourceClass)
             ->orderBy('label')
             ->get();

@@ -19,7 +19,7 @@ class SavedView extends Model
     #[Override]
     public function getTable(): string
     {
-        return $this->table ?? config('saved-views.table', 'saved_views');
+        return $this->table ?? config('filament-happenv-saved-views.table', 'saved_views');
     }
 
     #[Override]

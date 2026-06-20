@@ -42,7 +42,7 @@ it('filters by user and class with plain where clauses', function (): void {
 });
 
 it('honours a host-overridden table name', function (): void {
-    config()->set('saved-views.table', 'custom_views');
+    config()->set('filament-happenv-saved-views.table', 'custom_views');
 
     expect((new SavedView)->getTable())->toBe('custom_views');
 });
