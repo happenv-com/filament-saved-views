@@ -15,10 +15,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable();
             $table->text('label')->nullable();
             $table->text('class')->nullable();
-            $table->json('filters')->nullable();
-            $table->text('search_term')->nullable();
-            $table->json('columns')->nullable();
-            $table->json('sorts')->nullable();
+            $table->json('saved_data')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('submenu_visible')->default(true);
             $table->timestamps();

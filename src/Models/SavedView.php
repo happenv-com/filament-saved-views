@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Happenv\FilamentSavedViews\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Override;
 
 /**
- * @property Collection<string, mixed> $filters
+ * @property array<string, mixed>|null $saved_data
  */
 class SavedView extends Model
 {
@@ -26,7 +24,7 @@ class SavedView extends Model
     protected function casts(): array
     {
         return [
-            'filters' => AsCollection::class,
+            'saved_data' => 'array',
             'sort_order' => 'integer',
             'submenu_visible' => 'boolean',
         ];
