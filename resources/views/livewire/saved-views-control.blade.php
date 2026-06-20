@@ -1,7 +1,7 @@
 <div>
     @php ($activeView = request()->query('savedView'))
 
-    <div class="flex flex-col gap-3 p-3">
+    <div class="fi-fm-sv flex flex-col gap-3">
         {{-- Capture the current filter/search state as a new named view. --}}
         <div class="flex items-center gap-2" x-data="{ label: '' }">
             <x-filament::input.wrapper class="flex-1">
