@@ -8,6 +8,7 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\View\TablesRenderHook;
+use Happenv\FilamentSavedViews\Filament\Concerns\HasSavedViews;
 use Livewire\Livewire;
 
 class FilamentSavedViewsPlugin implements Plugin
@@ -29,7 +30,7 @@ class FilamentSavedViewsPlugin implements Plugin
 
                 // Only resource List pages get the control — not relation managers
                 // or table widgets, which have no resource-scoped saved views.
-                if (! $component instanceof ListRecords) {
+                if (! $component instanceof ListRecords || !in_array(HasSavedViews::class, \class_uses_recursive($component), strict: true)) {
                     return '';
                 }
 
