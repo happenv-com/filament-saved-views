@@ -2,32 +2,21 @@
     @php ($activeView = request()->query('savedView'))
 
     <div class="fi-fm-sv flex flex-col gap-3">
-        {{-- Capture the current filter/search state as a new named view. --}}
-        <div class="flex items-center gap-2" x-data="{ label: '' }">
-            <x-filament::input.wrapper class="flex-1">
-                <x-filament::input
-                    type="text"
-                    x-model="label"
-                    :placeholder="__('filament-saved-views::saved-views.name_placeholder')"
-                    x-on:keydown.enter.prevent="
-                        $wire.save(label, window.location.search)
-                        label = ''
-                    "
-                />
-            </x-filament::input.wrapper>
+        {{-- Capture the current filter/search state as a new named view. The name
+             field + validation live in the Filament form ($this->form). --}}
+        <form x-on:submit.prevent="$wire.save(window.location.search)" class="flex items-start gap-2">
+            <div class="flex-1">
+                {{ $this->form }}
+            </div>
 
             <x-filament::button
+                type="submit"
                 :icon="config('filament-happenv-saved-views.icons.save')"
                 color="primary"
                 :title="__('filament-saved-views::saved-views.save')"
-                x-on:click="
-                    $wire.save(label, window.location.search)
-                    label = ''
-                "
-                x-bind:disabled="!label.trim()"
                 class="shrink-0"
             />
-        </div>
+        </form>
 
         <div class="-mx-1 border-t border-gray-100 dark:border-white/10"></div>
 

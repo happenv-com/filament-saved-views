@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Happenv\FilamentSavedViews\Livewire;
 
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
-use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentView;
 use Happenv\FilamentSavedViews\Models\SavedView;
@@ -26,32 +28,60 @@ use RuntimeException;
  * from the page URL, so it works for any resource without that resource declaring
  * its own action.
  */
-class SavedViewsControl extends Component implements HasActions, HasSchemas
+class SavedViewsControl extends Component implements HasActions, HasForms
 {
     use InteractsWithActions;
-    use InteractsWithSchemas;
+    use InteractsWithForms;
 
     /** @var class-string The resource the saved views are scoped to. */
     public string $resourceClass;
 
+    /**
+     * State for the "save current view" form (the name input).
+     *
+     * @var array<string, mixed>|null
+     */
+    public ?array $data = [];
+
+    /**
+     * Id of the view currently being renamed. Captured when the edit action
+     * mounts so the uniqueness rule can exclude it (public so it survives the
+     * Livewire round-trip between mounting the modal and submitting it).
+     */
+    public string | int | null $editingViewId = null;
+
     public function mount(string $resourceClass): void
     {
         $this->resourceClass = $resourceClass;
+        $this->form->fill();
+    }
+
+    /**
+     * The "save current view" form: a single name input whose validation
+     * (required + per-user/resource uniqueness) is handled by Filament.
+     */
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->schema([
+                TextInput::make('label')
+                    ->hiddenLabel()
+                    ->placeholder(__('filament-saved-views::saved-views.name_placeholder'))
+                    ->required()
+                    ->rule(fn (): Closure => fn (string $attribute, mixed $value, Closure $fail) => $this->failIfDuplicateLabel($value, null, $fail)),
+            ])
+            ->statePath('data');
     }
 
     /**
      * Persist the current filter state (read from the browser query string) as a
-     * named view, then open it.
+     * named view, then open it. The name is validated by the Filament form.
      *
      * @throws RuntimeException
      */
-    public function save(string $label, ?string $queryString = null): void
+    public function save(?string $queryString = null): void
     {
-        $label = trim($label);
-
-        if ($label === '') {
-            return;
-        }
+        $label = trim((string) $this->form->getState()['label']);
 
         parse_str(ltrim((string) $queryString, '?'), $params);
         $filters = $params['filters'] ?? [];
@@ -144,16 +174,38 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
                 TextInput::make('label')
                     ->hiddenLabel()
                     ->placeholder(__('filament-saved-views::saved-views.rename_placeholder'))
-                    ->required(),
+                    ->required()
+                    ->rule(fn (): Closure => fn (string $attribute, mixed $value, Closure $fail) => $this->failIfDuplicateLabel($value, $this->editingViewId, $fail)),
             ])
-            ->fillForm(fn (array $arguments): array => [
-                'label' => $this->scopedQuery()->whereKey($arguments['id'] ?? null)->value('label'),
-            ])
+            ->fillForm(function (array $arguments): array {
+                // Capture the edited id so the uniqueness rule can exclude this
+                // record. Set here (not in mountUsing) because fillForm reliably
+                // runs with the action arguments on mount.
+                $this->editingViewId = $arguments['id'] ?? null;
+
+                return ['label' => $this->scopedQuery()->whereKey($arguments['id'] ?? null)->value('label')];
+            })
             ->action(function (array $data, array $arguments): void {
                 $this->scopedQuery()
                     ->whereKey($arguments['id'] ?? null)
                     ->update(['label' => $data['label']]);
             });
+    }
+
+    /**
+     * Validation helper: fail when another saved view in the same scope already
+     * uses the given label. Pass $exceptId to exclude the record being renamed.
+     */
+    private function failIfDuplicateLabel(mixed $value, string | int | null $exceptId, Closure $fail): void
+    {
+        $duplicate = $this->scopedQuery()
+            ->where('label', trim((string) $value))
+            ->when($exceptId !== null, fn (Builder $query): Builder => $query->whereKeyNot($exceptId))
+            ->exists();
+
+        if ($duplicate) {
+            $fail(__('filament-saved-views::saved-views.duplicate_name'));
+        }
     }
 
     public function urlFor(SavedView $view): string

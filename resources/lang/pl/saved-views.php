@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'label' => 'Zapisane widoki',
-    'name_placeholder' => 'Nazwij ten widok…',
+    'name_placeholder' => 'Nazwij bieżący widok…',
     'save' => 'Zapisz bieżący widok',
     'delete' => 'Usuń widok',
     'delete_confirm' => 'Usunąć ten zapisany widok?',
@@ -12,4 +12,5 @@ return [
     'rename' => 'Zmień nazwę',
     'rename_placeholder' => 'Nazwa widoku…',
     'submenu_visible' => 'Pokaż w menu strony',
+    'duplicate_name' => 'Widok o tej nazwie już istnieje.',
 ];

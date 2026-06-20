@@ -30,7 +30,7 @@ class FilamentSavedViewsPlugin implements Plugin
 
                 // Only resource List pages get the control — not relation managers
                 // or table widgets, which have no resource-scoped saved views.
-                if (! $component instanceof ListRecords || !in_array(HasSavedViews::class, \class_uses_recursive($component), strict: true)) {
+                if (! $component instanceof ListRecords || ! in_array(HasSavedViews::class, \class_uses_recursive($component), strict: true)) {
                     return '';
                 }
 
