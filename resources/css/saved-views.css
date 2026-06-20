@@ -8,7 +8,13 @@
  * the Filament theme and resolve globally.
  */
 
-.fi-fm-sv {
+/*
+ * No padding on the panel itself: inside a modal/slide-over the
+ * `.fi-modal-content` already provides the inline inset (matching how Filament's
+ * own column manager carries no padding in a modal). Only the dropdown layout
+ * needs its own padding, mirroring `.fi-ta-col-manager-dropdown .fi-ta-col-manager`.
+ */
+.fi-fm-saved-view-manager-dropdown .fi-fm-sv {
     padding: calc(var(--spacing) * 6);
 }
 
