@@ -7,11 +7,14 @@ namespace Happenv\FilamentSavedViews\Livewire;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentView;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -81,7 +84,6 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
             ->size('sm')
             ->requiresConfirmation()
             ->modalHeading(__('filament-saved-views::saved-views.delete_confirm'))
-            ->extraAttributes(['class' => 'shrink-0 opacity-0 transition group-hover:opacity-100'])
             ->action(function (array $arguments): void {
                 $id = $arguments['id'] ?? null;
 
@@ -89,14 +91,68 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
                     return;
                 }
 
-                resolve(SavedView::class)::query()
-                    ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
-                    ->where('class', $this->resourceClass)
-                    ->whereKey($id)
-                    ->delete();
+                $this->scopedQuery()->whereKey($id)->delete();
 
                 $url = $this->resourceClass::getUrl('index');
                 $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+            });
+    }
+
+    /**
+     * Persist the new order from a list of view ids (as produced by SortableJS
+     * `toArray()`), scoped to the current user + resource.
+     *
+     * @param  array<int, string|int>  $orderedIds
+     */
+    public function reorderViews(array $orderedIds): void
+    {
+        foreach (array_values($orderedIds) as $index => $id) {
+            $this->scopedQuery()->whereKey($id)->update(['sort_order' => $index]);
+        }
+    }
+
+    /**
+     * Flip whether a view appears in the page submenu.
+     */
+    public function toggleSubmenu(string | int $id): void
+    {
+        $view = $this->scopedQuery()->whereKey($id)->first();
+
+        if ($view === null) {
+            return;
+        }
+
+        $view->submenu_visible = ! $view->submenu_visible;
+        $view->save();
+    }
+
+    /**
+     * Inline rename behind a modal opened from the per-row gear button. The view
+     * id is passed as an action argument from the blade trigger.
+     */
+    public function editViewAction(): Action
+    {
+        return Action::make('editView')
+            ->label(__('filament-saved-views::saved-views.rename'))
+            ->icon(config('filament-happenv-saved-views.icons.edit'))
+            ->iconButton()
+            ->color('gray')
+            ->size('sm')
+            ->modalHeading(__('filament-saved-views::saved-views.rename'))
+            ->modalWidth(Width::Small)
+            ->schema([
+                TextInput::make('label')
+                    ->hiddenLabel()
+                    ->placeholder(__('filament-saved-views::saved-views.rename_placeholder'))
+                    ->required(),
+            ])
+            ->fillForm(fn (array $arguments): array => [
+                'label' => $this->scopedQuery()->whereKey($arguments['id'] ?? null)->value('label'),
+            ])
+            ->action(function (array $data, array $arguments): void {
+                $this->scopedQuery()
+                    ->whereKey($arguments['id'] ?? null)
+                    ->update(['label' => $data['label']]);
             });
     }
 
@@ -109,15 +165,26 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
     }
 
     /**
+     * Base query scoped to the current user + the resource this control is bound to.
+     *
+     * @return Builder<SavedView>
+     */
+    private function scopedQuery(): Builder
+    {
+        return resolve(SavedView::class)::query()
+            ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
+            ->where('class', $this->resourceClass);
+    }
+
+    /**
      * @return Collection<int, SavedView>
      *
      * @throws RuntimeException
      */
     public function getViewsProperty(): Collection
     {
-        return resolve(SavedView::class)::query()
-            ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
-            ->where('class', $this->resourceClass)
+        return $this->scopedQuery()
+            ->orderBy('sort_order')
             ->orderBy('label')
             ->get();
     }
