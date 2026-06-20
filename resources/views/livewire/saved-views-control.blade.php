@@ -4,7 +4,7 @@
     <div class="fi-fm-sv flex flex-col gap-3">
         {{-- Capture the current filter/search state as a new named view. The name
              field + validation live in the Filament form ($this->form). --}}
-        <form x-on:submit.prevent="$wire.save(window.location.search)" class="flex items-start gap-2">
+        <form x-on:submit.prevent="$wire.save()" class="flex items-start gap-2">
             <div class="flex-1">
                 {{ $this->form }}
             </div>

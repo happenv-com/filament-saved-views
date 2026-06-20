@@ -91,28 +91,14 @@ class SavedViewsControl extends Component implements HasActions, HasForms
     }
 
     /**
-     * Persist the current filter state (read from the browser query string) as a
-     * named view, then open it. The name is validated by the Filament form.
-     *
-     * @throws RuntimeException
+     * Validate the name, then hand off to the page (which owns the live table
+     * state) to capture + persist the view via the `save-current-view` event.
      */
-    public function save(?string $queryString = null): void
+    public function save(): void
     {
         $label = trim((string) $this->form->getState()['label']);
 
-        parse_str(ltrim((string) $queryString, '?'), $params);
-        $filters = $params['filters'] ?? [];
-
-        $view = resolve(SavedView::class);
-        $view->class = $this->resourceClass;
-        $view->filters = collect(is_array($filters) ? $filters : []);
-        $view->search_term = is_string($params['tableSearch'] ?? null) ? $params['tableSearch'] : null;
-        $view->label = $label;
-        $view->user_id = Auth::guard(config('filament-happenv-saved-views.guard'))->id();
-        $view->save();
-
-        $url = $this->urlFor($view);
-        $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+        $this->dispatch('save-current-view', label: $label);
     }
 
     /**
@@ -292,10 +278,14 @@ class SavedViewsControl extends Component implements HasActions, HasForms
 
     public function urlFor(SavedView $view): string
     {
-        return $this->resourceClass::getUrl('index') . '?' . \http_build_query([
-            'filters' => $view->filters->all(),
+        $data = $view->saved_data ?? [];
+
+        return $this->resourceClass::getUrl('index') . '?' . \http_build_query(array_filter([
+            'filters' => $data['filters'] ?? [],
+            'search' => $data['search'] ?? null,
+            'sort' => $data['sort'] ?? null,
             'savedView' => $view->id,
-        ]);
+        ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
     }
 
     /**
