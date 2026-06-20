@@ -41,15 +41,15 @@
                 x-sortable
                 x-on:end.stop="$wire.reorderViews($event.target.sortable.toArray())"
                 data-sortable-animation-duration="300"
-                class="fi-ta-col-manager-items"
+                class="fi-fm-sv-items"
             >
                 @foreach ($this->views as $view)
                     <div x-sortable-item="{{ $view->id }}" wire:key="saved-view-{{ $view->id }}">
-                        <div class="fi-ta-col-manager-item">
-                            <div class="fi-ta-col-manager-label">
+                        <div class="fi-fm-sv-item">
+                            <div class="fi-fm-sv-label">
                                 <input
                                     type="checkbox"
-                                    class="fi-checkbox-input fi-valid"
+                                    class="fi-checkbox-input"
                                     @checked($view->submenu_visible)
                                     wire:change="toggleSubmenu('{{ $view->id }}')"
                                     :title="__('filament-saved-views::saved-views.submenu_visible')"
@@ -59,7 +59,7 @@
                                     href="{{ $this->urlFor($view) }}"
                                     wire:navigate
                                     @class([
-                                        'min-w-0 flex-1 truncate',
+                                        'fi-fm-sv-link',
                                         'font-semibold text-primary-600 dark:text-primary-400' => (string) $activeView === (string) $view->id,
                                     ])
                                 >{{ $view->label }}</a>
@@ -71,7 +71,7 @@
                             <button
                                 x-sortable-handle
                                 x-on:click.stop
-                                class="fi-ta-col-manager-reorder-handle fi-icon-btn"
+                                class="fi-fm-sv-handle"
                                 type="button"
                             >
                                 {{ \Filament\Support\generate_icon_html(config('filament-happenv-saved-views.icons.reorder')) }}

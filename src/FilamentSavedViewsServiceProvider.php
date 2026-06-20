@@ -6,6 +6,8 @@ namespace Happenv\FilamentSavedViews;
 
 use Closure;
 use Filament\Actions\Action;
+use Filament\Support\Assets\Css;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Filament\Enums\SavedViewManagerLayout;
 use Happenv\FilamentSavedViews\Livewire\SavedViewsControl;
@@ -37,6 +39,10 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         Livewire::component('filament-saved-views-control', SavedViewsControl::class);
+
+        FilamentAsset::register([
+            Css::make('filament-saved-views', __DIR__ . '/../resources/css/saved-views.css'),
+        ], 'happenv-com/filament-saved-views');
 
         $this->registerTableMacros();
     }

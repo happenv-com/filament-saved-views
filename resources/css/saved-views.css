@@ -1,0 +1,45 @@
+/*
+ * Self-contained styles for the saved-views manager list. Scoped under the
+ * package's own class names (fi-fm-sv-*) so the component does not depend on
+ * Filament's internal table column-manager CSS (which is scoped under
+ * `.fi-ta-col-manager` and therefore would not apply here). The layout values
+ * are copied from that component; the CSS custom properties (--spacing,
+ * --text-sm) are provided by the Filament theme and resolve globally.
+ */
+
+.fi-fm-sv-items {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 1);
+}
+
+.fi-fm-sv-item {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing) * 2);
+    padding-block: calc(var(--spacing) * 1.5);
+}
+
+.fi-fm-sv-label {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    column-gap: calc(var(--spacing) * 2);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+}
+
+.fi-fm-sv-link {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fi-fm-sv-handle {
+    display: inline-flex;
+    cursor: move;
+    color: var(--gray-400);
+}
