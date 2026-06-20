@@ -19,7 +19,7 @@
             </x-filament::input.wrapper>
 
             <x-filament::button
-                :icon="config('saved-views.icons.save')"
+                :icon="config('filament-happenv-saved-views.icons.save')"
                 color="primary"
                 :title="__('filament-saved-views::saved-views.save')"
                 x-on:click="
@@ -47,7 +47,7 @@
                         wire:navigate
                         class="flex min-w-0 flex-1 items-center gap-2 text-gray-700 dark:text-gray-200"
                     >
-                        <x-filament::icon :icon="config('saved-views.icons.item')" class="h-4 w-4 shrink-0 text-gray-400" />
+                        <x-filament::icon :icon="config('filament-happenv-saved-views.icons.item')" class="h-4 w-4 shrink-0 text-gray-400" />
                         <span class="truncate">{{ $view->label }}</span>
                     </a>
 
