@@ -88,6 +88,9 @@ trait HasSavedViews
             'filters' => $this->tableFilters ?? [],
             'search' => (string) $this->tableSearch,
             'sort' => $this->tableSort,
+            'grouping' => $this->tableGrouping,
+            // @phpstan-ignore method.notFound
+            'perPage' => $this->getTableRecordsPerPage(),
             'columns' => $this->tableColumns,
         ];
         $view->save();
@@ -129,6 +132,13 @@ trait HasSavedViews
             // @phpstan-ignore method.notFound
             $this->applyTableColumnManager($columns);
         }
+
+        // perPage is session-based (not URL-synced), so restore it explicitly.
+        $perPage = $view?->saved_data['perPage'] ?? null;
+
+        if ($perPage !== null) {
+            $this->tableRecordsPerPage = $perPage;
+        }
     }
 
     /**
@@ -143,6 +153,7 @@ trait HasSavedViews
             'filters' => $data['filters'] ?? [],
             'search' => $data['search'] ?? null,
             'sort' => $data['sort'] ?? null,
+            'grouping' => $data['grouping'] ?? null,
             'savedView' => $view->id,
         ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
     }

@@ -284,6 +284,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
             'filters' => $data['filters'] ?? [],
             'search' => $data['search'] ?? null,
             'sort' => $data['sort'] ?? null,
+            'grouping' => $data['grouping'] ?? null,
             'savedView' => $view->id,
         ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
     }
