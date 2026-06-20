@@ -8,6 +8,7 @@ use Filament\Navigation\NavigationItem;
 use Filament\Resources\Pages\ListRecords;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use RuntimeException;
 
@@ -55,6 +56,14 @@ trait HasSavedViews
 
         return $items;
     }
+
+    /**
+     * Re-render the page (and so the saved-views sub-navigation) when the
+     * saved-views control commits a change. The empty body is intentional:
+     * receiving the Livewire event triggers a re-render.
+     */
+    #[On('saved-views-updated')]
+    public function refreshSavedViews(): void {}
 
     /**
      * @throws RuntimeException

@@ -43,6 +43,8 @@ class FilamentSavedViewsPlugin implements Plugin
                     'layout' => $table->getSavedViewManagerLayout(),
                     // @phpstan-ignore-next-line method.notFound (Table macro)
                     'triggerAction' => $table->getSavedViewManagerTriggerAction(),
+                    // @phpstan-ignore-next-line method.notFound (Table macro)
+                    'deferred' => $table->getDeferSavedViewManager(),
                 ])->render();
             },
         );

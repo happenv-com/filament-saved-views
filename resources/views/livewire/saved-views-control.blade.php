@@ -1,4 +1,4 @@
-<div>
+<div x-on:apply-saved-views.window="$wire.applySavedViews()">
     @php ($activeView = request()->query('savedView'))
 
     <div class="fi-fm-sv flex flex-col gap-3">
