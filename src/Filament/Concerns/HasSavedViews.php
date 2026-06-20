@@ -6,6 +6,7 @@ namespace Happenv\FilamentSavedViews\Filament\Concerns;
 
 use Filament\Navigation\NavigationItem;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Facades\FilamentView;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -28,6 +29,9 @@ trait HasSavedViews
 {
     #[Url(as: 'savedView')]
     public ?string $savedView = null;
+
+    /** Guard so a saved view's columns are restored only once per component load. */
+    public bool $savedViewColumnsApplied = false;
 
     /**
      * @return array<NavigationItem>
@@ -66,15 +70,80 @@ trait HasSavedViews
     public function refreshSavedViews(): void {}
 
     /**
+     * Capture the current table state and persist it as a named view. Triggered
+     * by the saved-views control via the `save-current-view` event; the page is
+     * the only place with native access to the live filters/search/sort/columns.
+     *
+     * @throws RuntimeException
+     */
+    #[On('save-current-view')]
+    public function saveCurrentView(string $label): void
+    {
+        $view = resolve(SavedView::class);
+        // @phpstan-ignore staticMethod.notFound
+        $view->class = static::getResource();
+        $view->user_id = Auth::guard(config('filament-happenv-saved-views.guard'))->id();
+        $view->label = $label;
+        $view->saved_data = [
+            'filters' => $this->tableFilters ?? [],
+            'search' => (string) $this->tableSearch,
+            'sort' => $this->tableSort,
+            'columns' => $this->tableColumns,
+        ];
+        $view->save();
+
+        $url = $this->getUrlForSavedView($view);
+        $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+    }
+
+    /**
+     * Restore toggled columns when a saved view is opened. Filters/search/sort
+     * come back via the URL natively; columns are session-based, so apply them
+     * explicitly. Runs in the `booted` hook (after the table is initialised) and
+     * only once per component load (the guard survives Livewire round-trips).
+     *
+     * @throws RuntimeException
+     */
+    public function bootedHasSavedViews(): void
+    {
+        if ($this->savedViewColumnsApplied) {
+            return;
+        }
+
+        $this->savedViewColumnsApplied = true;
+
+        $savedViewId = $this->savedView ?? request()->query('savedView');
+
+        if (blank($savedViewId)) {
+            return;
+        }
+
+        $view = resolve(SavedView::class)::query()
+            ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
+            ->whereKey($savedViewId)
+            ->first();
+
+        $columns = $view?->saved_data['columns'] ?? null;
+
+        if (is_array($columns) && $columns !== []) {
+            // @phpstan-ignore method.notFound
+            $this->applyTableColumnManager($columns);
+        }
+    }
+
+    /**
      * @throws RuntimeException
      */
     public function getUrlForSavedView(SavedView $view): string
     {
         $resource = static::getResource();
+        $data = $view->saved_data ?? [];
 
-        return $resource::getUrl('index') . '?' . \http_build_query([
-            'filters' => $view->filters->all(),
+        return $resource::getUrl('index') . '?' . \http_build_query(array_filter([
+            'filters' => $data['filters'] ?? [],
+            'search' => $data['search'] ?? null,
+            'sort' => $data['sort'] ?? null,
             'savedView' => $view->id,
-        ]);
+        ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
     }
 }
