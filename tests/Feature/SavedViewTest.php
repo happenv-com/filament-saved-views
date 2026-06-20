@@ -46,3 +46,15 @@ it('honours a host-overridden table name', function (): void {
 
     expect((new SavedView)->getTable())->toBe('custom_views');
 });
+
+it('defaults sort_order to 0 and submenu_visible to true, cast to int/bool', function (): void {
+    $view = SavedView::query()->create([
+        'user_id' => 1,
+        'class' => 'App\\Resources\\OrderResource',
+        'label' => 'Defaults',
+        'filters' => collect(),
+    ])->fresh();
+
+    expect($view->sort_order)->toBe(0)
+        ->and($view->submenu_visible)->toBeTrue();
+});

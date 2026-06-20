@@ -27,6 +27,8 @@ class SavedView extends Model
     {
         return [
             'filters' => AsCollection::class,
+            'sort_order' => 'integer',
+            'submenu_visible' => 'boolean',
         ];
     }
 }

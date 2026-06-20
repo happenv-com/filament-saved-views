@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('search_term')->nullable();
             $table->json('columns')->nullable();
             $table->json('sorts')->nullable();
+            $table->integer('sort_order')->default(0);
+            $table->boolean('submenu_visible')->default(true);
             $table->timestamps();
         });
     }
