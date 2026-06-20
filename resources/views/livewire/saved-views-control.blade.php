@@ -47,6 +47,7 @@
                                 <a
                                     href="{{ $this->urlFor($view) }}"
                                     wire:navigate
+                                    title="{{ $view->label }}"
                                     @class([
                                         'fi-fm-sv-link',
                                         'font-semibold text-primary-600 dark:text-primary-400' => (string) $activeView === (string) $view->id,
