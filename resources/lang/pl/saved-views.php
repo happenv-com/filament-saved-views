@@ -9,4 +9,7 @@ return [
     'delete' => 'Usuń widok',
     'delete_confirm' => 'Usunąć ten zapisany widok?',
     'empty' => 'Brak zapisanych widoków',
+    'rename' => 'Zmień nazwę',
+    'rename_placeholder' => 'Nazwa widoku…',
+    'submenu_visible' => 'Pokaż w menu strony',
 ];

@@ -19,5 +19,7 @@ return [
         'delete' => Heroicon::Trash,
         'save' => Heroicon::ArrowDownTray,
         'item' => Heroicon::Bookmark,
+        'edit' => Heroicon::Cog6Tooth,
+        'reorder' => Heroicon::Bars2,
     ],
 ];

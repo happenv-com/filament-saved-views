@@ -9,4 +9,7 @@ return [
     'delete' => 'Delete view',
     'delete_confirm' => 'Delete this saved view?',
     'empty' => 'No saved views yet',
+    'rename' => 'Rename view',
+    'rename_placeholder' => 'View name…',
+    'submenu_visible' => 'Show in the page menu',
 ];

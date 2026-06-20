@@ -9,4 +9,7 @@ return [
     'delete' => 'Ansicht löschen',
     'delete_confirm' => 'Diese gespeicherte Ansicht löschen?',
     'empty' => 'Noch keine gespeicherten Ansichten',
+    'rename' => 'Ansicht umbenennen',
+    'rename_placeholder' => 'Name der Ansicht…',
+    'submenu_visible' => 'Im Seitenmenü anzeigen',
 ];
