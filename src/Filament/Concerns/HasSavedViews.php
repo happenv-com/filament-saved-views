@@ -45,7 +45,8 @@ trait HasSavedViews
             // @phpstan-ignore staticMethod.notFound
             ->where('class', static::getResource())
             ->where('submenu_visible', true)
-            ->orderBy('sort_order')
+            // @phpstan-ignore method.notFound
+            ->ordered()
             ->orderBy('label')
             ->get();
 
@@ -93,6 +94,8 @@ trait HasSavedViews
             'perPage' => $this->getTableRecordsPerPage(),
             'columns' => $this->tableColumns,
         ];
+        // Append the new view to the end of the user's list for this resource.
+        $view->setHighestOrderNumber();
         $view->save();
 
         $url = $this->getUrlForSavedView($view);

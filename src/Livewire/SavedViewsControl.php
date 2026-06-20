@@ -150,9 +150,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
             return;
         }
 
-        foreach (array_values($orderedIds) as $index => $id) {
-            $this->scopedQuery()->whereKey($id)->update(['sort_order' => $index]);
-        }
+        resolve(SavedView::class)::setNewOrder(array_values($orderedIds), 0);
 
         $this->dispatch('saved-views-updated');
     }
@@ -203,9 +201,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
             }
 
             if ($this->draftOrder !== null) {
-                foreach (array_values($this->draftOrder) as $index => $id) {
-                    $this->scopedQuery()->whereKey($id)->update(['sort_order' => $index]);
-                }
+                resolve(SavedView::class)::setNewOrder(array_values($this->draftOrder), 0);
             }
         });
 
@@ -329,7 +325,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
     public function getViewsProperty(): Collection
     {
         $views = $this->scopedQuery()
-            ->orderBy('sort_order')
+            ->ordered()
             ->orderBy('label')
             ->get();
 
