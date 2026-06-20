@@ -9,6 +9,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Support\Facades\FilamentView;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -60,7 +61,8 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
         $view->user_id = Auth::guard(config('filament-happenv-saved-views.guard'))->id();
         $view->save();
 
-        $this->redirect($this->urlFor($view));
+        $url = $this->urlFor($view);
+        $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
     }
 
     /**
@@ -93,7 +95,8 @@ class SavedViewsControl extends Component implements HasActions, HasSchemas
                     ->whereKey($id)
                     ->delete();
 
-                $this->redirect($this->resourceClass::getUrl('index'));
+                $url = $this->resourceClass::getUrl('index');
+                $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
             });
     }
 
