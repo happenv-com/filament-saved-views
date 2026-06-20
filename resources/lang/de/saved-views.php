@@ -13,4 +13,5 @@ return [
     'rename_placeholder' => 'Name der Ansicht…',
     'submenu_visible' => 'Im Seitenmenü anzeigen',
     'duplicate_name' => 'Eine Ansicht mit diesem Namen existiert bereits.',
+    'apply' => 'Ansichten anwenden',
 ];

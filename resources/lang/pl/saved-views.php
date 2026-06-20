@@ -13,4 +13,5 @@ return [
     'rename_placeholder' => 'Nazwa widoku…',
     'submenu_visible' => 'Pokaż w menu strony',
     'duplicate_name' => 'Widok o tej nazwie już istnieje.',
+    'apply' => 'Zastosuj widoki',
 ];

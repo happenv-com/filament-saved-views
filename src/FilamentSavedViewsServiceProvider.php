@@ -64,6 +64,9 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
         /** @var WeakMap<Table, Closure|null> $triggerCallbacks */
         $triggerCallbacks = new WeakMap;
 
+        /** @var WeakMap<Table, bool|Closure|null> $deferConditions */
+        $deferConditions = new WeakMap;
+
         Table::macro('savedViewManagerLayout', function (SavedViewManagerLayout | Closure | null $layout) use ($layouts): Table {
             /** @var Table $this */
             // @phpstan-ignore varTag.nativeType
@@ -86,6 +89,20 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
             return $this;
         });
 
+        Table::macro('deferSavedViewManager', function (bool | Closure $condition = true) use ($deferConditions): Table {
+            /** @var Table $this */
+            // @phpstan-ignore varTag.nativeType
+            $deferConditions[$this] = $condition;
+
+            return $this;
+        });
+
+        Table::macro('getDeferSavedViewManager', function () use ($deferConditions): bool {
+            /** @var Table $this */
+            // @phpstan-ignore varTag.nativeType
+            return (bool) ($this->evaluate($deferConditions[$this] ?? null) ?? false);
+        });
+
         Table::macro('getSavedViewManagerTriggerAction', function () use ($triggerCallbacks): Action {
             /** @var Table $this */
             // @phpstan-ignore varTag.nativeType
@@ -99,6 +116,16 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
                 ->modalCancelActionLabel(__('filament::components/modal.actions.close.label'))
                 ->table($this)
                 ->authorize(true);
+
+            // @phpstan-ignore-next-line method.notFound (Table macro)
+            if ($this->getDeferSavedViewManager()) {
+                $action->extraModalFooterActions([
+                    Action::make('applySavedViews')
+                        ->label(__('filament-saved-views::saved-views.apply'))
+                        ->button()
+                        ->alpineClickHandler("\$dispatch('apply-saved-views'); close()"),
+                ]);
+            }
 
             $callback = $triggerCallbacks[$this] ?? null;
 

@@ -13,4 +13,5 @@ return [
     'rename_placeholder' => 'View name…',
     'submenu_visible' => 'Show in the page menu',
     'duplicate_name' => 'A view with this name already exists.',
+    'apply' => 'Apply saved views',
 ];
