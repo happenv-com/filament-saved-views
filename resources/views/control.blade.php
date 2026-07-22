@@ -11,6 +11,7 @@
 --}}
 @if ($layout === SavedViewManagerLayout::Modal || $triggerAction->isModalSlideOver())
     <x-filament::modal
+        :id="$livewireKey . '.manager'"
         :alignment="$triggerAction->getModalAlignment()"
         :autofocus="$triggerAction->isModalAutofocused()"
         :close-button="$triggerAction->hasModalCloseButton()"
