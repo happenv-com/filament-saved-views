@@ -41,7 +41,7 @@
                                     class="fi-checkbox-input"
                                     @checked($view->submenu_visible)
                                     wire:change="toggleSubmenu('{{ $view->id }}')"
-                                    :title="__('filament-saved-views::saved-views.submenu_visible')"
+                                    title="{{ __('filament-saved-views::saved-views.submenu_visible') }}"
                                 />
 
                                 <a
