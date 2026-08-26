@@ -10,8 +10,8 @@ without touching the package.
 
 ## Features
 
-- **Save the current view** — capture filters, search, sort, grouping, per-page and the toggled
-  column state of any resource list table.
+- **Save the current view** — capture the complete table state of any resource list table: filters,
+  search, per-column searches, sort, grouping, per-page, and the column layout including its order.
 - **Saved-views manager** — a toolbar control (dropdown / modal / slide-over) that lists a user's
   views, mirroring the look and spacing of Filament's column manager.
 - **Reorder** views by drag-and-drop, **rename** them inline, and **delete** them.

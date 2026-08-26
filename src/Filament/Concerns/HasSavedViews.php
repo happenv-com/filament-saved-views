@@ -88,11 +88,14 @@ trait HasSavedViews
         $view->saved_data = [
             'filters' => $this->tableFilters ?? [],
             'search' => (string) $this->tableSearch,
+            'column_searches' => $this->tableColumnSearches,
             'sort' => $this->tableSort,
             'grouping' => $this->tableGrouping,
             // @phpstan-ignore method.notFound
-            'perPage' => $this->getTableRecordsPerPage(),
+            'per_page' => $this->getTableRecordsPerPage(),
             'columns' => $this->tableColumns,
+            // @phpstan-ignore method.notFound
+            'columns_reordered' => (bool) session()->get($this->getHasReorderedTableColumnsSessionKey(), false),
         ];
         // Append the new view to the end of the user's list for this resource.
         $view->setHighestOrderNumber();
@@ -129,18 +132,39 @@ trait HasSavedViews
             ->whereKey($savedViewId)
             ->first();
 
-        $columns = $view?->saved_data['columns'] ?? null;
+        $data = $view?->saved_data ?? [];
+
+        $columns = $data['columns'] ?? null;
 
         if (is_array($columns) && $columns !== []) {
+            // The reorder flag has to travel WITH the columns, not after them:
+            // applyTableColumnManager() branches on it to decide whether to sync the saved order
+            // or fall back to the table's declared order. Restoring the columns without it turns
+            // a hand-ordered view back into the default order.
             // @phpstan-ignore method.notFound
-            $this->applyTableColumnManager($columns);
+            $this->applyTableColumnManager($columns, (bool) ($data['columns_reordered'] ?? false));
         }
 
-        // perPage is session-based (not URL-synced), so restore it explicitly.
-        $perPage = $view?->saved_data['perPage'] ?? null;
+        // Everything below is session-based rather than URL-synced, so it has to be restored by
+        // hand — unlike filters, search, sort and grouping, which travel in the view's URL.
+        $perPage = $data['per_page'] ?? $data['perPage'] ?? null;
 
         if ($perPage !== null) {
             $this->tableRecordsPerPage = $perPage;
+        }
+
+        $columnSearches = $data['column_searches'] ?? null;
+
+        if (is_array($columnSearches) && $columnSearches !== []) {
+            $this->tableColumnSearches = $columnSearches;
+
+            // bootedInteractsWithTable() has already written the session from the pre-restore
+            // value, so without this the session and the component disagree from here on.
+            // @phpstan-ignore method.notFound
+            if ($this->getTable()->persistsColumnSearchesInSession()) {
+                // @phpstan-ignore method.notFound
+                session()->put($this->getTableColumnSearchesSessionKey(), $columnSearches);
+            }
         }
     }
 
