@@ -60,7 +60,33 @@ it('carries a badge once the table is arranged away from the view', function ():
     expect($trigger->getBadge())->not->toBeNull()
         ->and(filled($trigger->getBadge()))->toBeTrue()
         ->and($trigger->getBadgeColor())->toBe('danger')
-        ->and((string) $trigger->getBadgeTooltip())->toBe(__('filament-saved-views::saved-views.unsaved_changes'));
+        // On the ACTION, not on the badge. `badgeTooltip()` is settable on an Action and nothing
+        // renders it for one — only the navigation components read it — so the explanation has to
+        // hang off the button itself.
+        ->and((string) $trigger->getTooltip())->toBe(__('filament-saved-views::saved-views.unsaved_changes'));
+});
+
+it('carries no tooltip while the table matches the view', function (): void {
+    // The tooltip is the explanation for the dot, so it must not linger once the dot is gone.
+    $component = new SavedViewsListComponent;
+    $component->mountInteractsWithTable();
+    $component->bootedInteractsWithTable();
+    $component->bootedHasSavedViews();
+
+    $view = new SavedView;
+    $view->user_id = 7;
+    $view->class = SavedViewsListComponent::getResource();
+    $view->label = 'v';
+    $view->saved_data = $component->getCurrentTableStateForSavedView();
+    $view->save();
+
+    $opened = new SavedViewsListComponent;
+    $opened->savedView = (string) $view->id;
+    $opened->mountInteractsWithTable();
+    $opened->bootedInteractsWithTable();
+    $opened->bootedHasSavedViews();
+
+    expect(($this->triggerFor)($opened)->getTooltip())->toBeNull();
 });
 
 it('carries no badge on a page that has no saved views at all', function (): void {

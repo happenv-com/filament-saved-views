@@ -43,6 +43,9 @@ trait HasSavedViews
     /** Per-request memo for {@see getOpenSavedView()}; not part of the Livewire snapshot. */
     protected ?SavedView $cachedOpenSavedView = null;
 
+    /** Per-request memo for {@see hasUnsavedSavedViewChanges()}. */
+    protected ?bool $cachedHasUnsavedSavedViewChanges = null;
+
     /**
      * @return array<NavigationItem>
      *
@@ -126,6 +129,7 @@ trait HasSavedViews
         $view->save();
 
         $this->cachedOpenSavedView = $view;
+        $this->cachedHasUnsavedSavedViewChanges = false;
 
         $url = $this->getUrlForSavedView($view);
         $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
@@ -165,6 +169,16 @@ trait HasSavedViews
      * @throws RuntimeException
      */
     public function hasUnsavedSavedViewChanges(): bool
+    {
+        // Asked at least twice per render of the toolbar — once for the dot, once for the tooltip —
+        // and again by the render hook for the update button.
+        return $this->cachedHasUnsavedSavedViewChanges ??= $this->computeUnsavedSavedViewChanges();
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    protected function computeUnsavedSavedViewChanges(): bool
     {
         $stored = $this->getOpenSavedView()?->saved_data;
 
