@@ -65,6 +65,64 @@ describe('saveCurrentView', function (): void {
     });
 });
 
+describe('updateCurrentView', function (): void {
+    it('writes the current table state over the open view', function (): void {
+        $view = storeSavedView(['search' => 'old', 'per_page' => 10]);
+        $component = bootSavedViewsComponent((string) $view->id);
+
+        $component->tableSearch = 'new';
+        $component->tableColumnSearches = ['name' => 'ada'];
+        $component->updateCurrentView();
+
+        expect($view->refresh()->saved_data)
+            ->toHaveKey('search', 'new')
+            ->toHaveKey('column_searches', ['name' => 'ada']);
+    });
+
+    it('captures exactly what saving a new view captures', function (): void {
+        // The two paths must not drift, or updating a view silently drops a slice that creating
+        // one keeps.
+        $view = storeSavedView([]);
+        $component = bootSavedViewsComponent((string) $view->id);
+
+        $component->updateCurrentView();
+        $updated = array_keys($view->refresh()->saved_data);
+
+        $component->saveCurrentView('Another');
+        $created = array_keys(SavedView::query()->where('label', 'Another')->sole()->saved_data);
+
+        sort($updated);
+        sort($created);
+
+        expect($updated)->toBe($created);
+    });
+
+    it('does nothing when no view is open', function (): void {
+        $view = storeSavedView(['search' => 'untouched']);
+        $component = bootSavedViewsComponent();
+
+        $component->tableSearch = 'changed';
+        $component->updateCurrentView();
+
+        expect($view->refresh()->saved_data['search'])->toBe('untouched');
+    });
+
+    it('will not write to a view belonging to somebody else', function (): void {
+        $someoneElse = new SavedView;
+        $someoneElse->user_id = 99;
+        $someoneElse->class = SavedViewsListComponent::getResource();
+        $someoneElse->label = 'Theirs';
+        $someoneElse->saved_data = ['search' => 'theirs'];
+        $someoneElse->save();
+
+        $component = bootSavedViewsComponent((string) $someoneElse->id);
+        $component->tableSearch = 'mine';
+        $component->updateCurrentView();
+
+        expect($someoneElse->refresh()->saved_data['search'])->toBe('theirs');
+    });
+});
+
 describe('bootedHasSavedViews', function (): void {
     it('restores the slices that do not travel in the URL', function (): void {
         $columns = bootSavedViewsComponent()->getDefaultTableColumnState();

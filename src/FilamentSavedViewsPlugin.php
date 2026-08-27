@@ -38,6 +38,9 @@ class FilamentSavedViewsPlugin implements Plugin
 
                 return view('filament-saved-views::control', [
                     'resourceClass' => $component::getResource(),
+                    // The page owns the answer to "is a view open?"; the control cannot work it
+                    // out for itself once it starts handling its own Livewire requests.
+                    'activeViewId' => $component->savedView ?? null,
                     'livewireKey' => 'saved-views-control-' . $component->getId(),
                     // @phpstan-ignore-next-line method.notFound (Table macro)
                     'layout' => $table->getSavedViewManagerLayout(),

@@ -39,7 +39,7 @@
 
         {{ $triggerAction->getModalContent() }}
 
-        @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred], $livewireKey)
+        @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred, 'activeViewId' => $activeViewId], $livewireKey)
 
         {{ $triggerAction->getModalContentFooter() }}
     </x-filament::modal>
@@ -54,6 +54,6 @@
             {{ $triggerAction }}
         </x-slot>
 
-        @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred], $livewireKey)
+        @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred, 'activeViewId' => $activeViewId], $livewireKey)
     </x-filament::dropdown>
 @endif
