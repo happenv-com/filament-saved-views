@@ -3,6 +3,19 @@
 @endphp
 
 {{--
+    "Update this view" lives HERE rather than inside the nested control, and that is deliberate.
+    This wrapper is re-rendered by the render hook every time the page renders, so `$hasUnsavedChanges`
+    is current; the nested control keeps its own mounted state and would still be showing whatever
+    was true when it mounted. Rendering here also puts the button in the page's own Livewire scope,
+    so it calls `updateCurrentView` on the page directly instead of dispatching an event to it.
+--}}
+@php
+    $updateButton = fn (): string => view('filament-saved-views::update-button', [
+        'visible' => filled($activeViewId) && $hasUnsavedChanges,
+    ])->render();
+@endphp
+
+{{--
     Toolbar wrapper for the saved-views manager. The presentation (dropdown vs
     modal/slide-over) and the trigger button are driven by the table config set
     through `savedViewManagerLayout()` / `savedViewManagerTriggerAction()`,
@@ -39,6 +52,8 @@
 
         {{ $triggerAction->getModalContent() }}
 
+        {!! $updateButton() !!}
+
         @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred, 'activeViewId' => $activeViewId], $livewireKey)
 
         {{ $triggerAction->getModalContentFooter() }}
@@ -53,6 +68,8 @@
         <x-slot name="trigger">
             {{ $triggerAction }}
         </x-slot>
+
+        {!! $updateButton() !!}
 
         @livewire ('filament-saved-views-control', ['resourceClass' => $resourceClass, 'deferred' => $deferred, 'activeViewId' => $activeViewId], $livewireKey)
     </x-filament::dropdown>

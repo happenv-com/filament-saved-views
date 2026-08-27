@@ -41,6 +41,9 @@ class FilamentSavedViewsPlugin implements Plugin
                     // The page owns the answer to "is a view open?"; the control cannot work it
                     // out for itself once it starts handling its own Livewire requests.
                     'activeViewId' => $component->savedView ?? null,
+                    // Computed here, in the page's own render, so the update button appears and
+                    // disappears as the user arranges the table.
+                    'hasUnsavedChanges' => $component->hasUnsavedSavedViewChanges(),
                     'livewireKey' => 'saved-views-control-' . $component->getId(),
                     // @phpstan-ignore-next-line method.notFound (Table macro)
                     'layout' => $table->getSavedViewManagerLayout(),

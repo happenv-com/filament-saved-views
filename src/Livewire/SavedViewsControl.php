@@ -112,22 +112,6 @@ class SavedViewsControl extends Component implements HasActions, HasForms
     }
 
     /**
-     * Write the current table state over the open view.
-     *
-     * Like saving, this hands off to the page, which is the only component holding the live table
-     * state. The button exists only while a view is open — arranging columns inside one is
-     * deliberately transient until somebody asks for it to stick.
-     */
-    public function updateView(): void
-    {
-        if (blank($this->activeViewId)) {
-            return;
-        }
-
-        $this->dispatch('update-current-view');
-    }
-
-    /**
      * Delete a saved view behind a Filament confirmation modal. The view id is
      * passed as an action argument from the blade trigger.
      *

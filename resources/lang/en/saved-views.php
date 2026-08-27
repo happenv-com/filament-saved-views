@@ -7,6 +7,7 @@ return [
     'name_placeholder' => 'Name current view…',
     'save' => 'Save current view',
     'update' => 'Update this view',
+    'unsaved_changes' => 'Unsaved changes',
     'delete' => 'Delete view',
     'delete_confirm' => 'Delete this saved view?',
     'empty' => 'No saved views yet',

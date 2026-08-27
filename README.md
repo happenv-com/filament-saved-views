@@ -13,7 +13,8 @@ without touching the package.
 - **Save the current view** — capture the complete table state of any resource list table: filters,
   search, per-column searches, sort, grouping, per-page, and the column layout including its order.
 - **Update the open view** — arranging a table while a view is open does not change the view; an
-  explicit "Update this view" button in the control writes the current state over it.
+  explicit "Update this view" button writes the current state over it, shown only when there is
+  something to write. A dot on the manager trigger says the table has unsaved changes.
 - **Saved-views manager** — a toolbar control (dropdown / modal / slide-over) that lists a user's
   views, mirroring the look and spacing of Filament's column manager.
 - **Reorder** views by drag-and-drop, **rename** them inline, and **delete** them.
