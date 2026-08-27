@@ -40,6 +40,15 @@ class SavedViewsControl extends Component implements HasActions, HasForms
     /** Whether reorder/visibility/rename/delete are staged until "Apply". */
     public bool $deferred = false;
 
+    /**
+     * The view the page is currently showing, if any.
+     *
+     * Passed in from the render hook rather than read from the query string: this control is its
+     * own Livewire component, and its update requests carry no query string at all — so a control
+     * that asked the request would lose track of the open view the moment anyone clicked it.
+     */
+    public string | int | null $activeViewId = null;
+
     /** @var array<int, string|int>|null Ordered ids staged for reorder (deferred mode). */
     public ?array $draftOrder = null;
 
@@ -66,10 +75,11 @@ class SavedViewsControl extends Component implements HasActions, HasForms
      */
     public string | int | null $editingViewId = null;
 
-    public function mount(string $resourceClass, bool $deferred = false): void
+    public function mount(string $resourceClass, bool $deferred = false, string | int | null $activeViewId = null): void
     {
         $this->resourceClass = $resourceClass;
         $this->deferred = $deferred;
+        $this->activeViewId = $activeViewId;
         $this->form->fill();
     }
 
@@ -99,6 +109,22 @@ class SavedViewsControl extends Component implements HasActions, HasForms
         $label = trim((string) $this->form->getState()['label']);
 
         $this->dispatch('save-current-view', label: $label);
+    }
+
+    /**
+     * Write the current table state over the open view.
+     *
+     * Like saving, this hands off to the page, which is the only component holding the live table
+     * state. The button exists only while a view is open — arranging columns inside one is
+     * deliberately transient until somebody asks for it to stick.
+     */
+    public function updateView(): void
+    {
+        if (blank($this->activeViewId)) {
+            return;
+        }
+
+        $this->dispatch('update-current-view');
     }
 
     /**

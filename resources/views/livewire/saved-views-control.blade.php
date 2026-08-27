@@ -1,5 +1,7 @@
 <div x-on:apply-saved-views.window="$wire.applySavedViews()">
-    @php ($activeView = request()->query('savedView'))
+    {{-- The open view comes from the page via the render hook, not from the query string: this
+         control handles its own Livewire requests, which carry none. --}}
+    @php ($activeView = $this->activeViewId)
 
     <div class="fi-fm-sv flex flex-col gap-3">
         {{-- Capture the current filter/search state as a new named view. The name
@@ -17,6 +19,20 @@
                 class="shrink-0"
             />
         </form>
+
+        {{-- Arranging a table while a view is open does not change the view. This is how you ask
+             for it to stick, so it only appears when there is a view to write to. --}}
+        @if (filled($activeView))
+            <x-filament::button
+                wire:click="updateView"
+                :icon="config('filament-happenv-saved-views.icons.update')"
+                color="gray"
+                size="sm"
+                class="w-full"
+            >
+                {{ __('filament-saved-views::saved-views.update') }}
+            </x-filament::button>
+        @endif
 
         <div class="-mx-1 border-t border-gray-100 dark:border-white/10"></div>
 

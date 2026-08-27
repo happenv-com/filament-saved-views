@@ -18,6 +18,7 @@ return [
         'manager' => Heroicon::Eye,
         'delete' => Heroicon::Trash,
         'save' => Heroicon::ArrowDownTray,
+        'update' => Heroicon::ArrowPath,
         'item' => Heroicon::Bookmark,
         'edit' => Heroicon::Cog6Tooth,
         'reorder' => Heroicon::Bars2,
