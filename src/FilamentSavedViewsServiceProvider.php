@@ -8,8 +8,8 @@ use Closure;
 use Filament\Actions\Action;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Happenv\FilamentSavedViews\Filament\Actions\SavedViewManagerAction;
 use Happenv\FilamentSavedViews\Filament\Enums\SavedViewManagerLayout;
 use Happenv\FilamentSavedViews\Livewire\SavedViewsControl;
 use Happenv\FilamentSavedViews\Models\SavedView;
@@ -104,44 +104,10 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
             return (bool) ($this->evaluate($deferConditions[$this] ?? null) ?? false);
         });
 
-        /**
-         * Whether the page has been arranged away from the saved view it is showing.
-         *
-         * Passed in rather than called as `self::…`: Table::macro rebinds its closure to the Table
-         * class, so `self` inside one is `Table`, not this provider.
-         *
-         * The trigger is built for EVERY table on the panel, including the many that know nothing
-         * about saved views, so the question has to tolerate a component that cannot answer it.
-         */
-        $hasUnsavedChanges = static fn (HasTable $livewire): bool => method_exists($livewire, 'hasUnsavedSavedViewChanges')
-            && $livewire->hasUnsavedSavedViewChanges();
-
-        Table::macro('getSavedViewManagerTriggerAction', function () use ($triggerCallbacks, $hasUnsavedChanges): Action {
+        Table::macro('getSavedViewManagerTriggerAction', function () use ($triggerCallbacks): Action {
             /** @var Table $this */
             // @phpstan-ignore varTag.nativeType
-            $action = Action::make('openSavedViewManager')
-                ->label(__('filament-saved-views::saved-views.label'))
-                ->iconButton()
-                ->icon(config('filament-happenv-saved-views.icons.manager'))
-                ->color('gray')
-                // A dot on the trigger when the table has been arranged away from the view it is
-                // showing. Closures, not values: they are evaluated at render, so they follow the
-                // table as the user works instead of freezing at whatever was true on page load.
-                // The glyph is hidden by the package stylesheet — Filament will not render a badge
-                // whose content is blank, and what is wanted here is the dot alone.
-                ->badge(static fn (HasTable $livewire): ?string => $hasUnsavedChanges($livewire) ? '•' : null)
-                ->badgeColor('danger')
-                // The explanation goes on the whole button, not on the dot. `badgeTooltip()` is
-                // settable on an Action but nothing renders it for one: it is read only by the
-                // navigation components — sidebar, topbar, tabs — and never by the button blades.
-                ->tooltip(static fn (HasTable $livewire): ?string => $hasUnsavedChanges($livewire)
-                    ? __('filament-saved-views::saved-views.unsaved_changes')
-                    : null)
-                ->livewireClickHandlerEnabled(false)
-                ->modalSubmitAction(false)
-                ->modalCancelActionLabel(__('filament::components/modal.actions.close.label'))
-                ->table($this)
-                ->authorize(true);
+            $action = SavedViewManagerAction::make()->table($this);
 
             // @phpstan-ignore-next-line method.notFound (Table macro)
             if ($this->getDeferSavedViewManager()) {
