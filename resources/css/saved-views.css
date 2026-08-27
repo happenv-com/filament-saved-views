@@ -57,3 +57,30 @@
     cursor: move;
     color: var(--gray-400);
 }
+
+/*
+ * The "unsaved changes" badge on the manager trigger is a dot and nothing else.
+ *
+ * Filament refuses to render a badge whose content is blank (`@if (filled($badge))`), so the action
+ * supplies a single character and it is hidden here. Scoped to the manager's own wrapper class so
+ * no other badge in the panel is touched.
+ */
+.fi-fm-saved-view-manager-dropdown .fi-btn-badge-ctn .fi-badge,
+.fi-fm-saved-view-manager-modal .fi-btn-badge-ctn .fi-badge {
+    min-width: calc(var(--spacing) * 2);
+    width: calc(var(--spacing) * 2);
+    height: calc(var(--spacing) * 2);
+    padding: 0;
+    border-radius: 9999px;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+
+.fi-fm-sv-update {
+    padding-bottom: calc(var(--spacing) * 4);
+}
+
+.fi-fm-saved-view-manager-dropdown .fi-fm-sv-update {
+    padding: calc(var(--spacing) * 6) calc(var(--spacing) * 6) 0;
+}

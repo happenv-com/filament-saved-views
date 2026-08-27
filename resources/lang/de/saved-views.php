@@ -7,6 +7,7 @@ return [
     'name_placeholder' => 'Aktuelle Ansicht benennen…',
     'save' => 'Aktuelle Ansicht speichern',
     'update' => 'Diese Ansicht aktualisieren',
+    'unsaved_changes' => 'Nicht gespeicherte Änderungen',
     'delete' => 'Ansicht löschen',
     'delete_confirm' => 'Diese gespeicherte Ansicht löschen?',
     'empty' => 'Noch keine gespeicherten Ansichten',

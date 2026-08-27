@@ -65,6 +65,107 @@ describe('saveCurrentView', function (): void {
     });
 });
 
+describe('hasUnsavedSavedViewChanges', function (): void {
+    it('says no when nothing has been touched since the view was opened', function (): void {
+        $view = storeSavedView([]);
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->updateCurrentView();
+
+        expect(bootSavedViewsComponent((string) $view->id)->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('says yes once the table is arranged away from the view', function (): void {
+        $view = storeSavedView([]);
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->updateCurrentView();
+
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->tableSearch = 'something new';
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeTrue();
+    });
+
+    it('says no when no view is open at all', function (): void {
+        $component = bootSavedViewsComponent();
+        $component->tableSearch = 'anything';
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('is not fooled by the key order the database hands back', function (): void {
+        // saved_data is json: it does not preserve the key order of an object, so a comparison
+        // that cared about order would report every view as edited the moment it was reopened.
+        $component = bootSavedViewsComponent();
+        $state = $component->getCurrentTableStateForSavedView();
+
+        $view = storeSavedView(array_reverse($state, preserve_keys: true));
+
+        expect(bootSavedViewsComponent((string) $view->id)->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('treats the several spellings of nothing as the same nothing', function (): void {
+        // An untouched filter form is not empty — Filament fills it with an entry per filter
+        // holding null values — and a view saved before a slice existed simply omits it.
+        $view = storeSavedView([
+            'filters' => ['status' => ['value' => null]],
+            'search' => '',
+            'columns_reordered' => false,
+        ]);
+
+        expect(bootSavedViewsComponent((string) $view->id)->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('does not call a view stale over a page size it never recorded', function (): void {
+        // Every other slice has a meaningful empty value. This one does not — its "empty" is
+        // whatever number the table chose — so a view that never stored it cannot differ on it.
+        $view = storeSavedView(['search' => '']);
+
+        expect(bootSavedViewsComponent((string) $view->id)->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('still notices a page size the user actually changed', function (): void {
+        $view = storeSavedView(['per_page' => 10]);
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->tableRecordsPerPage = 50;
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeTrue();
+    });
+
+    it('reads a legacy view through its old page-size key', function (): void {
+        $component = bootSavedViewsComponent();
+        $component->tableRecordsPerPage = 25;
+        $view = storeSavedView(['perPage' => 25]);
+
+        $reopened = bootSavedViewsComponent((string) $view->id);
+        $reopened->tableRecordsPerPage = 25;
+
+        expect($reopened->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+
+    it('notices a slice the view never recorded once the user fills it in', function (): void {
+        // The counterpart to ignoring an unrecorded column layout: a slice whose empty value IS
+        // blank must still go dirty when the user puts something in it, or an old view could never
+        // learn anything new.
+        $view = storeSavedView(['columns' => []]);
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->tableSearch = 'acme';
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeTrue();
+    });
+
+    it('goes quiet again the moment the view is updated', function (): void {
+        $view = storeSavedView(['search' => 'old']);
+        $component = bootSavedViewsComponent((string) $view->id);
+        $component->tableSearch = 'new';
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeTrue();
+
+        $component->updateCurrentView();
+
+        expect($component->hasUnsavedSavedViewChanges())->toBeFalse();
+    });
+});
+
 describe('updateCurrentView', function (): void {
     it('writes the current table state over the open view', function (): void {
         $view = storeSavedView(['search' => 'old', 'per_page' => 10]);

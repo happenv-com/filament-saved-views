@@ -30,8 +30,18 @@ trait HasSavedViews
     #[Url(as: 'savedView')]
     public ?string $savedView = null;
 
+    /**
+     * Slices whose unset value comes from the table rather than from being blank.
+     *
+     * @var list<string>
+     */
+    private const SAVED_VIEW_TABLE_DERIVED_SLICES = ['columns', 'per_page'];
+
     /** Guard so a saved view's columns are restored only once per component load. */
     public bool $savedViewColumnsApplied = false;
+
+    /** Per-request memo for {@see getOpenSavedView()}; not part of the Livewire snapshot. */
+    protected ?SavedView $cachedOpenSavedView = null;
 
     /**
      * @return array<NavigationItem>
@@ -115,6 +125,8 @@ trait HasSavedViews
         $view->saved_data = $this->getCurrentTableStateForSavedView();
         $view->save();
 
+        $this->cachedOpenSavedView = $view;
+
         $url = $this->getUrlForSavedView($view);
         $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
     }
@@ -127,7 +139,7 @@ trait HasSavedViews
      *
      * @return array<string, mixed>
      */
-    protected function getCurrentTableStateForSavedView(): array
+    public function getCurrentTableStateForSavedView(): array
     {
         return [
             'filters' => $this->tableFilters ?? [],
@@ -144,6 +156,89 @@ trait HasSavedViews
     }
 
     /**
+     * Whether the table has been arranged away from the saved view it is showing.
+     *
+     * Drives both affordances that tell the user their work is not saved: the dot on the manager
+     * trigger, and whether the "update this view" button is offered at all. False whenever no view
+     * is open — there is nothing to be unsaved against.
+     *
+     * @throws RuntimeException
+     */
+    public function hasUnsavedSavedViewChanges(): bool
+    {
+        $stored = $this->getOpenSavedView()?->saved_data;
+
+        if ($stored === null) {
+            return false;
+        }
+
+        $current = $this->getCurrentTableStateForSavedView();
+
+        if (array_key_exists('perPage', $stored) && ! array_key_exists('per_page', $stored)) {
+            $stored['per_page'] = $stored['perPage'];
+        }
+
+        unset($stored['perPage']);
+
+        // Two slices have no meaningful "empty": their unset value is whatever the table itself
+        // produces — every column, and the page size it was configured with. A view that never
+        // recorded one of them is not out of date on it, it simply says nothing about it. For
+        // every other slice, absent and empty do mean the same thing, so those still compare.
+        foreach (self::SAVED_VIEW_TABLE_DERIVED_SLICES as $slice) {
+            if (! array_key_exists($slice, $stored)) {
+                unset($current[$slice]);
+            }
+        }
+
+        return self::comparableSavedViewState($stored) !== self::comparableSavedViewState($current);
+    }
+
+    /**
+     * Reduce a saved-view payload to something two versions of it can be compared by.
+     *
+     * Three differences would otherwise read as edits the user never made:
+     *
+     *  - key ORDER, because the stored copy has been through `json`/`jsonb`, which does not keep it;
+     *  - a MISSING slice versus an empty one, because older views simply did not record everything;
+     *  - the several spellings of "nothing" — `null`, `''`, `[]`, `false`, and a filter form that
+     *    Filament has filled with an entry per filter holding null values, which is what an
+     *    untouched filter form actually looks like.
+     *
+     * All of them collapse to `null`, so only real differences survive.
+     *
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
+    protected static function comparableSavedViewState(array $state): array
+    {
+        $state = array_map(self::comparableSavedViewValue(...), $state);
+        $state = array_filter($state, static fn (mixed $value): bool => $value !== null);
+
+        ksort($state);
+
+        return $state;
+    }
+
+    protected static function comparableSavedViewValue(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            // `false` counts as nothing here: a view that never recorded the reorder flag and one
+            // that recorded it as false describe the same table.
+            return ($value === false || blank($value)) ? null : $value;
+        }
+
+        $value = array_map(self::comparableSavedViewValue(...), $value);
+
+        if (array_filter($value, static fn (mixed $item): bool => $item !== null) === []) {
+            return null;
+        }
+
+        ksort($value);
+
+        return $value;
+    }
+
+    /**
      * The saved view this page is showing, if any — scoped to its owner, so a guessed id in the
      * query string cannot reach somebody else's view.
      *
@@ -157,7 +252,9 @@ trait HasSavedViews
             return null;
         }
 
-        return resolve(SavedView::class)::query()
+        // Memoised: the dirty check runs on every render of the toolbar, and without this each one
+        // would be another query for a row that cannot change mid-request.
+        return $this->cachedOpenSavedView ??= resolve(SavedView::class)::query()
             ->where('user_id', Auth::guard(config('filament-happenv-saved-views.guard'))->id())
             ->whereKey($savedViewId)
             ->first();

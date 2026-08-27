@@ -8,6 +8,7 @@ use Closure;
 use Filament\Actions\Action;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Filament\Enums\SavedViewManagerLayout;
 use Happenv\FilamentSavedViews\Livewire\SavedViewsControl;
@@ -111,6 +112,19 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
                 ->iconButton()
                 ->icon(config('filament-happenv-saved-views.icons.manager'))
                 ->color('gray')
+                // A dot on the trigger when the table has been arranged away from the view it is
+                // showing. A closure, not a value: it is evaluated at render, so it follows the
+                // table as the user works instead of freezing at whatever was true on page load.
+                // The glyph is hidden by the package stylesheet — Filament will not render a badge
+                // whose content is blank, and what is wanted here is the dot alone.
+                ->badge(static function (HasTable $livewire): ?string {
+                    return method_exists($livewire, 'hasUnsavedSavedViewChanges')
+                        && $livewire->hasUnsavedSavedViewChanges()
+                            ? '•'
+                            : null;
+                })
+                ->badgeColor('danger')
+                ->badgeTooltip(__('filament-saved-views::saved-views.unsaved_changes'))
                 ->livewireClickHandlerEnabled(false)
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel(__('filament::components/modal.actions.close.label'))
