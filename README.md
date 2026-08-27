@@ -92,7 +92,24 @@ public function getSubNavigation(): array
 }
 ```
 
-### 3. Configure the manager per table (optional)
+### 3. Restyle the manager button (optional)
+
+The toolbar button is a `SavedViewManagerAction`, so it configures the way any Filament component
+does — once, for every table:
+
+```php
+use Happenv\FilamentSavedViews\Filament\Actions\SavedViewManagerAction;
+
+SavedViewManagerAction::configureUsing(
+    fn (SavedViewManagerAction $action) => $action->color('primary')->badgeColor('warning'),
+);
+```
+
+Your callback runs after the package's own defaults, so anything you set wins. A broad
+`Action::configureUsing()` registered against the parent still runs earlier, so a panel-wide default
+does not quietly repaint this one button.
+
+### 4. Configure the manager per table (optional)
 
 ```php
 use Happenv\FilamentSavedViews\Filament\Enums\SavedViewManagerLayout;
