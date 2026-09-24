@@ -30,6 +30,7 @@ $panel->plugin(FilamentSavedViewsPlugin::make());
 - **Submenu visibility.** A per-view checkbox controls whether the view appears in the page's sub-navigation (via the optional `HasSavedViews` trait) — see [Add the trait to your list pages](#2-add-the-trait-to-your-list-pages).
 - **Deferred mode.** Opt in with `deferSavedViewManager()` to stage changes and commit them with an "Apply saved views" action, just like `deferColumnManager()`.
 - **Per-user scoping.** Views belong to the signed-in user, and view names are unique per user and resource.
+- **64 languages.** The manager is translated into every locale Filament ships — see [Translations](#translations).
 - **Configurable icons and a swappable model.** Heroicons by default, any icon Filament accepts instead, and a model resolved from the container — see [Swapping the model](#swapping-the-model).
 
 ## Requirements
@@ -195,15 +196,13 @@ public function table(Table $table): Table
 
 ## Translations
 
-| Language | Code |
-|----------|------|
-| English  | `en` |
-| German   | `de` |
-| Polish   | `pl` |
+The manager ships in every locale Filament ships:
+
+`am` `ar` `az` `bg` `bn` `bs` `ca` `ckb` `cs` `da` `de` `el` `en` `es` `et` `eu` `fa` `fi` `fil` `fr` `he` `hi` `hr` `hu` `hy` `id` `it` `ja` `ka` `km` `ko` `ku` `lt` `lus` `lv` `mk` `mn` `ms` `my` `nb` `ne` `nl` `pl` `pt` `pt_BR` `ro` `ru` `sk` `sl` `sq` `sr_Cyrl` `sr_Latn` `sv` `sw` `tg` `th` `tr` `uk` `ur` `uz` `vi` `zh_CN` `zh_HK` `zh_TW`
 
 Publish them with `php artisan vendor:publish --tag="filament-saved-views-translations"` to change the
 wording or add a language. `tests/Unit/TranslationsTest.php` checks that every locale has exactly the
-keys English has.
+keys English has, and that every locale Filament ships has a translation.
 
 ## Development
 
