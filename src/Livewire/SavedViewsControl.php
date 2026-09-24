@@ -292,7 +292,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
             'sort' => $data['sort'] ?? null,
             'grouping' => $data['grouping'] ?? null,
             'savedView' => $view->id,
-        ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
+        ], static fn ($value): bool => ! in_array($value, [null, '', []], true)));
     }
 
     /**
@@ -346,7 +346,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
         // Drop staged deletions, apply staged renames/visibility, then re-order
         // by the staged order (falling back to the persisted order).
         $views = $views
-            ->reject(fn (SavedView $view): bool => in_array((string) $view->id, array_map('strval', $this->draftDeleted), strict: true))
+            ->reject(fn (SavedView $view): bool => in_array((string) $view->id, array_map(strval(...), $this->draftDeleted), strict: true))
             ->each(function (SavedView $view): void {
                 if (array_key_exists((string) $view->id, $this->draftLabels)) {
                     $view->label = $this->draftLabels[(string) $view->id];
@@ -358,7 +358,7 @@ class SavedViewsControl extends Component implements HasActions, HasForms
             });
 
         if ($this->draftOrder !== null) {
-            $order = array_flip(array_map('strval', $this->draftOrder));
+            $order = array_flip(array_map(strval(...), $this->draftOrder));
             $views = $views
                 ->sortBy(fn (SavedView $view): int => $order[(string) $view->id] ?? PHP_INT_MAX)
                 ->values();
