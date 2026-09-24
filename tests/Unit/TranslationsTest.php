@@ -62,3 +62,10 @@ it('translates every key and nothing else', function (?string $english, ?string 
     expect(array_keys($actual))->toEqualCanonicalizing(array_keys($expected))
         ->and($actual)->each->toBeString()->not->toBeEmpty();
 })->with('translation files');
+
+it('ships a translation for every locale Filament ships', function (string $locale): void {
+    expect(dirname(__DIR__, 2) . "/resources/lang/{$locale}/saved-views.php")->toBeFile();
+})->with(fn (): array => array_map(
+    basename(...),
+    glob(dirname(__DIR__, 2) . '/vendor/filament/filament/resources/lang/*', GLOB_ONLYDIR) ?: [],
+));
