@@ -1,5 +1,11 @@
 # Filament Saved Views
 
+<div class="filament-hidden">
+
+![Filament Saved Views](art/banner.png)
+
+</div>
+
 [![Latest Version](https://img.shields.io/github/v/release/happenv-com/filament-saved-views?style=flat-square&label=version)](https://github.com/happenv-com/filament-saved-views/releases)
 [![Tests](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-saved-views/tests.yml?label=tests&style=flat-square)](https://github.com/happenv-com/filament-saved-views/actions/workflows/tests.yml)
 [![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-saved-views/phpstan.yml?label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-saved-views/actions/workflows/phpstan.yml)
