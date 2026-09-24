@@ -44,6 +44,8 @@
                                     @checked($view->submenu_visible)
                                     wire:change="toggleSubmenu('{{ $view->id }}')"
                                     title="{{ __('filament-saved-views::saved-views.submenu_visible') }}"
+                                    {{-- The title alone read the same in every row; name the view too. --}}
+                                    aria-label="{{ __('filament-saved-views::saved-views.submenu_visible') }}: {{ $view->label }}"
                                 />
 
                                 <a
@@ -60,9 +62,12 @@
                             {{ ($this->editViewAction)(['id' => $view->id]) }}
                             {{ ($this->deleteViewAction)(['id' => $view->id]) }}
 
+                            {{-- Labelled like Filament's own drag handles: its translated "Move" plus
+                                 what moves (the column manager does "Reorder column" + the column name). --}}
                             <button
                                 x-sortable-handle
                                 x-on:click.stop
+                                aria-label="{{ __('filament-forms::components.builder.actions.reorder.label') }} {{ $view->label }}"
                                 class="fi-fm-sv-handle"
                                 type="button"
                             >
