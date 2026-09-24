@@ -8,11 +8,12 @@ name: 'Tests'
 # with what a fresh install gets today.
 #
 # Filament 4 and 5 are both supported: each major gets its own
-# `filament-constraint` and a Pest pin. composer.json allows ^4.0 || ^5.0, but
-# CI starts at ^4.13.3 and ^5.8.3: earlier releases do not bind Livewire's
-# DataStore as a singleton, and every Livewire render under Testbench fails
-# (filamentphp/filament#20515). Composer's security-advisory blocking refuses
-# most older Filament releases anyway.
+# `filament-constraint` and a Pest pin. composer.json allows ^4.11.2 || ^5.6.2
+# (Action::getModalSlideOverPosition(), used by the modal manager, arrived in
+# 4.11.2 / 5.6.2), but CI starts at ^4.13.3 and ^5.8.3: earlier releases do
+# not bind Livewire's DataStore as a singleton, and every Livewire render under
+# Testbench fails (filamentphp/filament#20515). Composer's security-advisory
+# blocking refuses most older Filament releases anyway.
 #
 # Laravel 11 is allowed by composer.json but cannot be tested: Composer's
 # security-advisory blocking rejects every stable laravel/framework 11.x
