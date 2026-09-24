@@ -11,7 +11,7 @@
 [![PHPStan](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-saved-views/phpstan.yml?label=phpstan&style=flat-square)](https://github.com/happenv-com/filament-saved-views/actions/workflows/phpstan.yml)
 [![Quality](https://img.shields.io/github/actions/workflow/status/happenv-com/filament-saved-views/quality.yml?label=code%20quality&style=flat-square)](https://github.com/happenv-com/filament-saved-views/actions/workflows/quality.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/happenv-com/filament-saved-views.svg?style=flat-square)](https://packagist.org/packages/happenv-com/filament-saved-views)
-[![License](https://img.shields.io/github/license/happenv-com/filament-saved-views.svg?style=flat-square)](LICENSE.md)
+[![License](https://img.shields.io/github/license/happenv-com/filament-saved-views.svg?style=flat-square)](https://github.com/happenv-com/filament-saved-views/blob/1.x/LICENSE.md)
 
 Reusable, per-user **saved views** for Filament list tables. Let users capture the current table
 state (filters, search, sort, grouping, per-page and toggled columns) as a named view, then reopen it
@@ -224,29 +224,29 @@ is no build step.
 
 ## Upgrading
 
-Breaking changes and how to migrate are described in [UPGRADING](UPGRADING.md) for every major version.
+Breaking changes and how to migrate are described in [UPGRADING](https://github.com/happenv-com/filament-saved-views/blob/1.x/UPGRADING.md) for every major version.
 
 ## Changelog
 
-See [CHANGELOG](CHANGELOG.md) and [GitHub releases](https://github.com/happenv-com/filament-saved-views/releases) for what has changed recently.
+See [CHANGELOG](https://github.com/happenv-com/filament-saved-views/blob/1.x/CHANGELOG.md) and [GitHub releases](https://github.com/happenv-com/filament-saved-views/releases) for what has changed recently.
 
 ## Contributing
 
-See [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+See [CONTRIBUTING](https://github.com/happenv-com/filament-saved-views/blob/1.x/.github/CONTRIBUTING.md) for details.
 
 ## Security vulnerabilities
 
-Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
+Please review [our security policy](https://github.com/happenv-com/filament-saved-views/blob/1.x/.github/SECURITY.md) on how to report security vulnerabilities.
 
 ## Credits
 
 - [Happenv sp. z o.o.](https://happenv.com)
 - [webard](https://github.com/webard)
-- [All contributors](../../contributors)
+- [All contributors](https://github.com/happenv-com/filament-saved-views/graphs/contributors)
 
 ## License
 
-The MIT License (MIT). See [License File](LICENSE.md) for more information.
+The MIT License (MIT). See [License File](https://github.com/happenv-com/filament-saved-views/blob/1.x/LICENSE.md) for more information.
 
 ---
 
