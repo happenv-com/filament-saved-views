@@ -258,3 +258,26 @@ describe('bootedHasSavedViews', function (): void {
         expect(bootSavedViewsComponent()->tableRecordsPerPage)->not->toBe(25);
     });
 });
+
+describe('getSavedViewsNavigationItems', function (): void {
+    // On a Livewire request (sort, filter, paginate) Filament's original_request() is rebuilt from
+    // the page path alone — no query string — so reading `savedView` from it dropped the open
+    // view's highlight on every table interaction. The page's own #[Url] property survives them.
+    it('keeps the open view active on Livewire requests, which carry no query string', function (): void {
+        $open = storeSavedView([]);
+        $open->submenu_visible = true;
+        $open->save();
+
+        $other = storeSavedView([]);
+        $other->label = 'Other view';
+        $other->submenu_visible = true;
+        $other->save();
+
+        $component = bootSavedViewsComponent((string) $open->id);
+
+        $active = collect($component->getSavedViewsNavigationItems())
+            ->mapWithKeys(fn ($item): array => [$item->getLabel() => $item->isActive()]);
+
+        expect($active->all())->toBe(['My view' => true, 'Other view' => false]);
+    });
+});

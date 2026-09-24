@@ -69,7 +69,10 @@ trait HasSavedViews
             $items[] = NavigationItem::make($view->label)
                 ->icon(config('filament-happenv-saved-views.icons.item'))
                 ->url($this->getUrlForSavedView($view))
-                ->isActiveWhen(fn (): bool => (string) original_request()->query('savedView') === (string) $view->id);
+                // The page's #[Url] property, not original_request(): on a Livewire request (sort,
+                // filter, paginate) Filament rebuilds that from the page path alone, without the
+                // query string, and the open view lost its highlight on every table interaction.
+                ->isActiveWhen(fn (): bool => (string) ($this->savedView ?? original_request()->query('savedView')) === (string) $view->id);
         }
 
         return $items;
