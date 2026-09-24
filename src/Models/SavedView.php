@@ -6,12 +6,21 @@ namespace Happenv\FilamentSavedViews\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Override;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 
 /**
+ * @property int|string $id
+ * @property int|string|null $user_id
+ * @property string|null $label
+ * @property string|null $class
  * @property array<string, mixed>|null $saved_data
+ * @property int $sort_order
+ * @property bool $submenu_visible
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class SavedView extends Model implements Sortable
 {
@@ -40,6 +49,8 @@ class SavedView extends Model implements Sortable
     /**
      * Order is scoped per owner + resource, so a new view is appended to the end
      * of its own (user, class) group rather than the whole table.
+     *
+     * @return Builder<static>
      */
     public function buildSortQuery(): Builder
     {

@@ -5,15 +5,14 @@ declare(strict_types=1);
 use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Happenv\FilamentSavedViews\Tests\Fixtures\SavedViewsListComponent;
+use Happenv\FilamentSavedViews\Tests\Fixtures\SavedViewsTableComponent;
 use Illuminate\Auth\GenericUser;
 
 beforeEach(function (): void {
     $this->actingAs(new GenericUser(['id' => 7]));
 
-    $this->triggerFor = function (SavedViewsListComponent $component) {
-        // @phpstan-ignore-next-line method.notFound (Table macro)
-        return Table::make($component)->getSavedViewManagerTriggerAction();
-    };
+    // @phpstan-ignore-next-line method.notFound (Table macro)
+    $this->triggerFor = fn (SavedViewsListComponent $component) => Table::make($component)->getSavedViewManagerTriggerAction();
 });
 
 it('carries no badge while the table matches the view it is showing', function (): void {
@@ -92,7 +91,7 @@ it('carries no tooltip while the table matches the view', function (): void {
 it('carries no badge on a page that has no saved views at all', function (): void {
     // The badge closure runs for every table in the panel, so it has to tolerate a component that
     // knows nothing about saved views.
-    $plain = new Happenv\FilamentSavedViews\Tests\Fixtures\SavedViewsTableComponent;
+    $plain = new SavedViewsTableComponent;
     $plain->mountInteractsWithTable();
     $plain->bootedInteractsWithTable();
 

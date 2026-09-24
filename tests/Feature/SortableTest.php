@@ -11,7 +11,7 @@ function makeSortableView(string $label, ?int $sort = null): SavedView
         'class' => 'App\\Resources\\OrderResource',
         'label' => $label,
         'sort_order' => $sort,
-    ], static fn ($value): bool => $value !== null));
+    ], static fn (string | int | null $value): bool => $value !== null));
 }
 
 it('reorders views with setNewOrder (0-based)', function (): void {

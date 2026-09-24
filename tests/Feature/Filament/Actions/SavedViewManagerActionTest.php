@@ -15,10 +15,8 @@ beforeEach(function (): void {
     $this->component->mountInteractsWithTable();
     $this->component->bootedInteractsWithTable();
 
-    $this->trigger = function () {
-        // @phpstan-ignore-next-line method.notFound (Table macro)
-        return Table::make($this->component)->getSavedViewManagerTriggerAction();
-    };
+    // @phpstan-ignore-next-line method.notFound (Table macro)
+    $this->trigger = fn () => Table::make($this->component)->getSavedViewManagerTriggerAction();
 });
 
 it('is what the table hands back as its manager trigger', function (): void {
@@ -36,7 +34,7 @@ it('lets a host override those defaults with configureUsing', function (): void 
     // of the class DECLARING it, then the configurations registered against that class. Reverse
     // them and the package would silently win over the host every time.
     SavedViewManagerAction::configureUsing(
-        static fn (SavedViewManagerAction $action) => $action->color('primary')->badgeColor('warning'),
+        static fn (SavedViewManagerAction $action): SavedViewManagerAction => $action->color('primary')->badgeColor('warning'),
         during: function (): void {
             expect(($this->trigger)()->getColor())->toBe('primary')
                 ->and(($this->trigger)()->getBadgeColor())->toBe('warning');
@@ -48,7 +46,7 @@ it('lets the package defaults win over a broad Action::configureUsing', function
     // A callback on the parent applies too, but earlier — so a panel-wide default does not quietly
     // repaint this button.
     Action::configureUsing(
-        static fn (Action $action) => $action->color('danger'),
+        static fn (Action $action): Action => $action->color('danger'),
         during: function (): void {
             expect(($this->trigger)()->getColor())->toBe('gray');
         },
@@ -58,7 +56,7 @@ it('lets the package defaults win over a broad Action::configureUsing', function
 it('still honours the per-table trigger callback, which runs last', function (): void {
     // Two seams, deliberately: configureUsing for every table, this one for a single table.
     SavedViewManagerAction::configureUsing(
-        static fn (SavedViewManagerAction $action) => $action->color('primary'),
+        static fn (SavedViewManagerAction $action): SavedViewManagerAction => $action->color('primary'),
         during: function (): void {
             $table = Table::make($this->component)
                 // @phpstan-ignore-next-line method.notFound (Table macro)

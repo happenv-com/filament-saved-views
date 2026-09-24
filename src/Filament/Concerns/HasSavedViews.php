@@ -340,6 +340,6 @@ trait HasSavedViews
             'sort' => $data['sort'] ?? null,
             'grouping' => $data['grouping'] ?? null,
             'savedView' => $view->id,
-        ], static fn ($value): bool => $value !== null && $value !== '' && $value !== []));
+        ], static fn ($value): bool => ! in_array($value, [null, '', []], true)));
     }
 }
