@@ -28,6 +28,8 @@ use RuntimeException;
  * toolbar (via the saved-views render hook). It reads the live table filter state
  * from the page URL, so it works for any resource without that resource declaring
  * its own action.
+ *
+ * @property-read Schema $form
  */
 class SavedViewsControl extends Component implements HasActions, HasForms
 {

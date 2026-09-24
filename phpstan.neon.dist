@@ -8,6 +8,8 @@ parameters:
     paths:
         - src
         - config
+        # The HasSavedViews trait is only analysed where a class uses it.
+        - tests/Fixtures
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
