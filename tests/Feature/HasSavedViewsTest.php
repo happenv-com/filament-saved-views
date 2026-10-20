@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Happenv\FilamentSavedViews\Tests\Fixtures\SavedViewsListComponent;
 use Illuminate\Auth\GenericUser;
@@ -14,9 +17,9 @@ use Illuminate\Support\Facades\Session;
  * in Livewire's validation hook, independently of what is being rendered. The trait's two entry
  * points are lifecycle hooks, so driving them directly tests the same thing.
  */
-function bootSavedViewsComponent(?string $savedViewId = null): SavedViewsListComponent
+function bootSavedViewsComponent(?string $savedViewId = null, ?SavedViewsListComponent $component = null): SavedViewsListComponent
 {
-    $component = new SavedViewsListComponent;
+    $component ??= new SavedViewsListComponent;
     $component->savedView = $savedViewId;
 
     $component->mountInteractsWithTable();
@@ -24,6 +27,59 @@ function bootSavedViewsComponent(?string $savedViewId = null): SavedViewsListCom
     $component->bootedHasSavedViews();
 
     return $component;
+}
+
+/** The fixture list with a second filter that starts at a value of its own. */
+function listWithDefaultFilter(): SavedViewsListComponent
+{
+    return new class extends SavedViewsListComponent
+    {
+        public function table(Table $table): Table
+        {
+            return parent::table($table)->pushFilters([
+                SelectFilter::make('kind')->options(['retail' => 'Retail', 'trade' => 'Trade'])->default('retail'),
+            ]);
+        }
+    };
+}
+
+/** The fixture list grouped by name until somebody changes it. */
+function listGroupedByDefault(): SavedViewsListComponent
+{
+    return new class extends SavedViewsListComponent
+    {
+        public function table(Table $table): Table
+        {
+            return parent::table($table)->groups(['name', 'email'])->defaultGroup('name');
+        }
+    };
+}
+
+/** The fixture list that can be grouped, and is not until somebody does. */
+function listWithGroups(): SavedViewsListComponent
+{
+    return new class extends SavedViewsListComponent
+    {
+        public function table(Table $table): Table
+        {
+            return parent::table($table)->groups(['name', 'email']);
+        }
+    };
+}
+
+/** The fixture list with filters whose defaults are a number and `false`. */
+function listWithNumberAndFalseDefaults(): SavedViewsListComponent
+{
+    return new class extends SavedViewsListComponent
+    {
+        public function table(Table $table): Table
+        {
+            return parent::table($table)->pushFilters([
+                SelectFilter::make('priority')->options([1 => 'Low', 2 => 'High'])->default(1),
+                TernaryFilter::make('archived')->default(false),
+            ]);
+        }
+    };
 }
 
 function storeSavedView(array $savedData): SavedView
@@ -279,5 +335,106 @@ describe('getSavedViewsNavigationItems', function (): void {
             ->mapWithKeys(fn ($item): array => [$item->getLabel() => $item->isActive()]);
 
         expect($active->all())->toBe(['My view' => true, 'Other view' => false]);
+    });
+});
+
+describe('hasSavableTableState', function (): void {
+    it('has nothing to save on the list as it opens', function (): void {
+        expect(bootSavedViewsComponent()->hasSavableTableState())->toBeFalse();
+    });
+
+    it('has something to save once the table is arranged', function (Closure $arrange): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+        $arrange($component);
+
+        expect($component->hasSavableTableState())->toBeTrue();
+    })->with([
+        'a filter' => [static fn (SavedViewsListComponent $component): array => $component->tableFilters = ['status' => ['value' => 'open'], 'kind' => ['value' => 'retail']]],
+        'a filter moved off its default' => [static fn (SavedViewsListComponent $component): array => $component->tableFilters = ['status' => ['value' => null], 'kind' => ['value' => 'trade']]],
+        'a search' => [static fn (SavedViewsListComponent $component): string => $component->tableSearch = 'widget'],
+        'a column search' => [static fn (SavedViewsListComponent $component): array => $component->tableColumnSearches = ['name' => 'ada']],
+        'a sort' => [static fn (SavedViewsListComponent $component): string => $component->tableSort = 'name:desc'],
+        'a page size' => [static fn (SavedViewsListComponent $component): int => $component->tableRecordsPerPage = 50],
+        'a hidden column' => [static fn (SavedViewsListComponent $component) => $component->applyTableColumnManager([
+            [...$component->tableColumns[0], 'isToggled' => false],
+            $component->tableColumns[1],
+        ])],
+        'columns moved' => [static fn (SavedViewsListComponent $component) => $component->applyTableColumnManager(array_reverse($component->tableColumns), wasReordered: true)],
+    ]);
+
+    it('does not count a filter left at its default', function (): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+
+        expect($component->tableFilters['kind'] ?? null)->toBe(['value' => 'retail'])
+            ->and($component->hasSavableTableState())->toBeFalse();
+    });
+
+    it('does not count a number default restored from the URL as a string', function (): void {
+        $component = bootSavedViewsComponent(component: listWithNumberAndFalseDefaults());
+        $component->tableFilters = [...$component->tableFilters, 'priority' => ['value' => '1'], 'archived' => ['value' => '0']];
+
+        expect($component->hasSavableTableState())->toBeFalse();
+    });
+
+    it('counts a filter cleared from its false default', function (): void {
+        $component = bootSavedViewsComponent(component: listWithNumberAndFalseDefaults());
+
+        expect($component->tableFilters['archived']['value'] ?? null)->not->toBeNull()
+            ->and($component->hasSavableTableState())->toBeFalse();
+
+        $component = bootSavedViewsComponent(component: listWithNumberAndFalseDefaults());
+        $component->tableFilters = [...$component->tableFilters, 'archived' => ['value' => null]];
+
+        expect($component->hasSavableTableState())->toBeTrue();
+    });
+
+    it('does not count the table default group', function (): void {
+        $component = bootSavedViewsComponent(component: listGroupedByDefault());
+
+        expect($component->tableGrouping)->toStartWith('name:')
+            ->and($component->hasSavableTableState())->toBeFalse();
+    });
+
+    it('counts a grouping away from the default', function (?string $grouping): void {
+        $component = bootSavedViewsComponent(component: listGroupedByDefault());
+        $component->tableGrouping = $grouping;
+
+        expect($component->hasSavableTableState())->toBeTrue();
+    })->with([
+        'another group' => ['email:asc'],
+        'the other direction' => ['name:desc'],
+        'no group at all' => [null],
+    ]);
+
+    it('counts a grouping on a table that opens ungrouped', function (): void {
+        $component = bootSavedViewsComponent(component: listWithGroups());
+
+        expect($component->hasSavableTableState())->toBeFalse();
+
+        $component = bootSavedViewsComponent(component: listWithGroups());
+        $component->tableGrouping = 'name:asc';
+
+        expect($component->hasSavableTableState())->toBeTrue();
+    });
+
+    it('leaves the filters as they were after reading their defaults', function (): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+        $component->tableFilters = ['status' => ['value' => 'open'], 'kind' => ['value' => 'trade']];
+
+        $component->hasSavableTableState();
+
+        expect($component->tableFilters)->toBe(['status' => ['value' => 'open'], 'kind' => ['value' => 'trade']]);
+    });
+
+    it('ignores what a host adds to the state', function (): void {
+        $component = bootSavedViewsComponent(component: new class extends SavedViewsListComponent
+        {
+            public function getCurrentTableStateForSavedView(): array
+            {
+                return [...parent::getCurrentTableStateForSavedView(), 'tab' => 'archived'];
+            }
+        });
+
+        expect($component->hasSavableTableState())->toBeFalse();
     });
 });
