@@ -139,6 +139,18 @@ trait HasSavedViews
     }
 
     /**
+     * The id of the manager's modal / slide-over on this page.
+     *
+     * A host that hides the toolbar button (`savedViewManagerTriggerHidden()`) opens the manager
+     * itself, with `$dispatch('open-modal', { id: <this> })`; asking the page keeps it from spelling
+     * out an id the package owns.
+     */
+    public function getSavedViewManagerModalId(): string
+    {
+        return 'saved-views-control-' . $this->getId() . '.manager';
+    }
+
+    /**
      * Everything worth remembering about how this table looks right now.
      *
      * Shared by saving a new view and updating the open one, so the two can never drift into
