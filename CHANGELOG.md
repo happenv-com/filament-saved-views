@@ -2,6 +2,28 @@
 
 All notable changes to `filament-saved-views` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.7.0 - 2026-10-20
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Dependencies
+
+* chore(deps): bump trufflesecurity/trufflehog from 3.97.5 to 3.97.9 in the github-actions group by @dependabot[bot] in https://github.com/happenv-com/filament-saved-views/pull/11
+* chore(deps): bump the github-actions group with 2 updates by @dependabot[bot] in https://github.com/happenv-com/filament-saved-views/pull/14
+
+#### Other
+
+* ci: run Copilot code review on GitHub-hosted runners by @webard in https://github.com/happenv-com/filament-saved-views/pull/12
+* chore: configure Laravel Moat by @webard in https://github.com/happenv-com/filament-saved-views/pull/13
+* feat: render the manager without its toolbar button by @webard in https://github.com/happenv-com/filament-saved-views/pull/15
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/happenv-com/filament-saved-views/pull/11
+
+**Full Changelog**: https://github.com/happenv-com/filament-saved-views/compare/v1.6.1...v1.7.0
+
 ## v1.6.1 - 2026-09-24
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
