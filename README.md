@@ -226,6 +226,15 @@ Action::make('savedViews')
 With the button hidden the manager is always a modal (or the slide-over you configure on the trigger
 action): a dropdown has nothing to hang from.
 
+A button whose job is saving can show itself only when there is something to save —
+`hasSavableTableState()` is true once the table differs from how it opens untouched (a filter away
+from its default, a search, a sort, a grouping, a page size, columns hidden or moved):
+
+```php
+Action::make('saveView')
+    ->visible(fn (): bool => $this->hasSavableTableState())
+```
+
 ## Translations
 
 The manager ships in every locale Filament ships:

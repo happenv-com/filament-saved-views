@@ -11,6 +11,7 @@ use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Filament\Concerns\HasSavedViews;
 use Illuminate\Contracts\View\View;
@@ -45,6 +46,9 @@ class SavedViewsListComponent extends Component implements HasActions, HasSchema
             ->columns([
                 TextColumn::make('name')->toggleable(),
                 TextColumn::make('email')->toggleable(),
+            ])
+            ->filters([
+                SelectFilter::make('status')->options(['open' => 'Open', 'closed' => 'Closed']),
             ]);
     }
 

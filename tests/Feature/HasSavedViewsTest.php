@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Happenv\FilamentSavedViews\Models\SavedView;
 use Happenv\FilamentSavedViews\Tests\Fixtures\SavedViewsListComponent;
 use Illuminate\Auth\GenericUser;
@@ -14,9 +16,9 @@ use Illuminate\Support\Facades\Session;
  * in Livewire's validation hook, independently of what is being rendered. The trait's two entry
  * points are lifecycle hooks, so driving them directly tests the same thing.
  */
-function bootSavedViewsComponent(?string $savedViewId = null): SavedViewsListComponent
+function bootSavedViewsComponent(?string $savedViewId = null, ?SavedViewsListComponent $component = null): SavedViewsListComponent
 {
-    $component = new SavedViewsListComponent;
+    $component ??= new SavedViewsListComponent;
     $component->savedView = $savedViewId;
 
     $component->mountInteractsWithTable();
@@ -24,6 +26,20 @@ function bootSavedViewsComponent(?string $savedViewId = null): SavedViewsListCom
     $component->bootedHasSavedViews();
 
     return $component;
+}
+
+/** The fixture list with a second filter that starts at a value of its own. */
+function listWithDefaultFilter(): SavedViewsListComponent
+{
+    return new class extends SavedViewsListComponent
+    {
+        public function table(Table $table): Table
+        {
+            return parent::table($table)->pushFilters([
+                SelectFilter::make('kind')->options(['retail' => 'Retail', 'trade' => 'Trade'])->default('retail'),
+            ]);
+        }
+    };
 }
 
 function storeSavedView(array $savedData): SavedView
@@ -279,5 +295,58 @@ describe('getSavedViewsNavigationItems', function (): void {
             ->mapWithKeys(fn ($item): array => [$item->getLabel() => $item->isActive()]);
 
         expect($active->all())->toBe(['My view' => true, 'Other view' => false]);
+    });
+});
+
+describe('hasSavableTableState', function (): void {
+    it('has nothing to save on the list as it opens', function (): void {
+        expect(bootSavedViewsComponent()->hasSavableTableState())->toBeFalse();
+    });
+
+    it('has something to save once the table is arranged', function (Closure $arrange): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+        $arrange($component);
+
+        expect($component->hasSavableTableState())->toBeTrue();
+    })->with([
+        'a filter' => [static fn (SavedViewsListComponent $component): array => $component->tableFilters = ['status' => ['value' => 'open'], 'kind' => ['value' => 'retail']]],
+        'a filter moved off its default' => [static fn (SavedViewsListComponent $component): array => $component->tableFilters = ['status' => ['value' => null], 'kind' => ['value' => 'trade']]],
+        'a search' => [static fn (SavedViewsListComponent $component): string => $component->tableSearch = 'widget'],
+        'a column search' => [static fn (SavedViewsListComponent $component): array => $component->tableColumnSearches = ['name' => 'ada']],
+        'a sort' => [static fn (SavedViewsListComponent $component): string => $component->tableSort = 'name:desc'],
+        'a page size' => [static fn (SavedViewsListComponent $component): int => $component->tableRecordsPerPage = 50],
+        'a hidden column' => [static fn (SavedViewsListComponent $component) => $component->applyTableColumnManager([
+            [...$component->tableColumns[0], 'isToggled' => false],
+            $component->tableColumns[1],
+        ])],
+        'columns moved' => [static fn (SavedViewsListComponent $component) => $component->applyTableColumnManager(array_reverse($component->tableColumns), wasReordered: true)],
+    ]);
+
+    it('does not count a filter left at its default', function (): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+
+        expect($component->tableFilters['kind'] ?? null)->toBe(['value' => 'retail'])
+            ->and($component->hasSavableTableState())->toBeFalse();
+    });
+
+    it('leaves the filters as they were after reading their defaults', function (): void {
+        $component = bootSavedViewsComponent(component: listWithDefaultFilter());
+        $component->tableFilters = ['status' => ['value' => 'open'], 'kind' => ['value' => 'trade']];
+
+        $component->hasSavableTableState();
+
+        expect($component->tableFilters)->toBe(['status' => ['value' => 'open'], 'kind' => ['value' => 'trade']]);
+    });
+
+    it('ignores what a host adds to the state', function (): void {
+        $component = bootSavedViewsComponent(component: new class extends SavedViewsListComponent
+        {
+            public function getCurrentTableStateForSavedView(): array
+            {
+                return [...parent::getCurrentTableStateForSavedView(), 'tab' => 'archived'];
+            }
+        });
+
+        expect($component->hasSavableTableState())->toBeFalse();
     });
 });

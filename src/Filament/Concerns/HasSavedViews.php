@@ -37,6 +37,13 @@ trait HasSavedViews
      */
     private const SAVED_VIEW_TABLE_DERIVED_SLICES = ['columns', 'per_page'];
 
+    /**
+     * Every slice {@see getCurrentTableStateForSavedView()} captures.
+     *
+     * @var list<string>
+     */
+    private const SAVED_VIEW_SLICES = ['filters', 'search', 'column_searches', 'sort', 'grouping', 'per_page', 'columns', 'columns_reordered'];
+
     /** Guard so a saved view's columns are restored only once per component load. */
     public bool $savedViewColumnsApplied = false;
 
@@ -45,6 +52,9 @@ trait HasSavedViews
 
     /** Per-request memo for {@see hasUnsavedSavedViewChanges()}. */
     protected ?bool $cachedHasUnsavedSavedViewChanges = null;
+
+    /** Per-request memo for {@see hasSavableTableState()}. */
+    protected ?bool $cachedHasSavableTableState = null;
 
     /**
      * @return array<NavigationItem>
@@ -188,6 +198,89 @@ trait HasSavedViews
         // Asked at least twice per render of the toolbar — once for the dot, once for the tooltip —
         // and again by the render hook for the update button.
         return $this->cachedHasUnsavedSavedViewChanges ??= $this->computeUnsavedSavedViewChanges();
+    }
+
+    /**
+     * Whether the table is arranged in a way worth saving: anything that sets it apart from how the
+     * list opens untouched — a filter away from its default, a search, a sort, a grouping, a page
+     * size or columns hidden, shown or moved.
+     *
+     * For a host that offers saving only when there is something to save (a "+" that would otherwise
+     * capture the plain list). Not used by the toolbar button, which also opens the views
+     * themselves and so is offered either way.
+     */
+    public function hasSavableTableState(): bool
+    {
+        return $this->cachedHasSavableTableState ??= $this->computeSavableTableState();
+    }
+
+    protected function computeSavableTableState(): bool
+    {
+        // Only what this package captures: a slice a host adds to the state (the tab a view was saved
+        // on, say) qualifies a view, but does not make the plain list worth saving on its own.
+        $state = array_intersect_key($this->getCurrentTableStateForSavedView(), array_flip(self::SAVED_VIEW_SLICES));
+
+        $default = [
+            'filters' => $this->getDefaultTableFilterStateForSavedView(),
+            // Filament keeps the table's default sort out of `tableSort`; only a default GROUP is
+            // written into `tableGrouping` when the table mounts.
+            'grouping' => ($group = $this->getTable()->getDefaultGroup()) !== null
+                ? "{$group->getId()}:{$this->getTable()->getDefaultGroupDirection()}"
+                : null,
+            'per_page' => $this->getTable()->getDefaultPaginationPageOption(),
+            'columns' => self::savedViewColumnLayout($this->getDefaultTableColumnState()),
+        ];
+
+        $state['columns'] = self::savedViewColumnLayout(is_array($state['columns'] ?? null) ? $state['columns'] : []);
+        // Whether the columns were ever dragged says nothing on its own: their order is compared.
+        unset($state['columns_reordered']);
+
+        if ((string) ($state['per_page'] ?? '') === (string) $default['per_page']) {
+            unset($state['per_page']);
+        }
+
+        unset($default['per_page']);
+
+        return self::comparableSavedViewState($state) !== self::comparableSavedViewState($default);
+    }
+
+    /**
+     * What the filter form holds before anybody touches it — every filter at its `default()`.
+     *
+     * Filament has no reader for that, only `fill()`; so the form is filled with its defaults, read,
+     * and the component's filter state put back.
+     *
+     * @return array<string, mixed>
+     */
+    protected function getDefaultTableFilterStateForSavedView(): array
+    {
+        $filters = $this->tableFilters;
+        $deferredFilters = $this->tableDeferredFilters;
+
+        try {
+            $this->getTableFiltersForm()->fill();
+
+            return ($this->getTable()->hasDeferredFilters() ? $this->tableDeferredFilters : $this->tableFilters) ?? [];
+        } finally {
+            $this->tableFilters = $filters;
+            $this->tableDeferredFilters = $deferredFilters;
+        }
+    }
+
+    /**
+     * The columns as the user arranged them — which are shown, in what order — without the labels
+     * and flags the column manager carries alongside.
+     *
+     * @param  array<int, array<string, mixed>>  $columns
+     * @return list<array{name: mixed, toggled: bool, columns?: list<mixed>}>
+     */
+    protected static function savedViewColumnLayout(array $columns): array
+    {
+        return array_values(array_map(static fn (array $column): array => [
+            'name' => $column['name'] ?? null,
+            'toggled' => (bool) ($column['isToggled'] ?? true),
+            ...(is_array($column['columns'] ?? null) ? ['columns' => self::savedViewColumnLayout($column['columns'])] : []),
+        ], $columns));
     }
 
     /**
