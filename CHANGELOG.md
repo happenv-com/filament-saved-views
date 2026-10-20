@@ -2,6 +2,17 @@
 
 All notable changes to `filament-saved-views` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.8.0 - 2026-10-20
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Other
+
+* feat: hasSavableTableState() — offer saving only when there is something to save by @webard in https://github.com/happenv-com/filament-saved-views/pull/16
+
+**Full Changelog**: https://github.com/happenv-com/filament-saved-views/compare/v1.7.0...v1.8.0
+
 ## v1.7.0 - 2026-10-20
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
