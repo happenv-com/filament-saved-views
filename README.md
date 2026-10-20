@@ -200,6 +200,32 @@ public function table(Table $table): Table
 }
 ```
 
+### 5. Open the manager from your own button (optional)
+
+When the manager should be opened from somewhere of your own — a tab, a menu item — hide the toolbar
+button. The toolbar then carries only the manager's modal, shut and taking no room, and you open it
+with Filament's `open-modal` event and the id the page gives you:
+
+```php
+public function table(Table $table): Table
+{
+    return $table
+        ->savedViewManagerTriggerAction(fn (Action $action): Action => $action->slideOver())
+        ->savedViewManagerTriggerHidden();
+}
+```
+
+```php
+use Filament\Actions\Action;
+use Illuminate\Support\Js;
+
+Action::make('savedViews')
+    ->alpineClickHandler(fn (): string => "\$dispatch('open-modal', { id: " . Js::from($this->getSavedViewManagerModalId()) . ' })');
+```
+
+With the button hidden the manager is always a modal (or the slide-over you configure on the trigger
+action): a dropdown has nothing to hang from.
+
 ## Translations
 
 The manager ships in every locale Filament ships:

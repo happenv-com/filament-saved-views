@@ -53,3 +53,21 @@ it('keeps saved-view manager config isolated per table instance', function (): v
     expect($configured->getSavedViewManagerLayout())->toBe(SavedViewManagerLayout::Modal)
         ->and($untouched->getSavedViewManagerLayout())->toBe(SavedViewManagerLayout::Dropdown);
 });
+
+it('shows the saved-view manager trigger by default', function (): void {
+    expect(makeSavedViewsTestTable()->isSavedViewManagerTriggerHidden())->toBeFalse();
+});
+
+it('hides the saved-view manager trigger when asked', function (): void {
+    expect(makeSavedViewsTestTable()->savedViewManagerTriggerHidden()->isSavedViewManagerTriggerHidden())->toBeTrue()
+        ->and(makeSavedViewsTestTable()->savedViewManagerTriggerHidden(false)->isSavedViewManagerTriggerHidden())->toBeFalse()
+        ->and(makeSavedViewsTestTable()->savedViewManagerTriggerHidden(fn (): bool => true)->isSavedViewManagerTriggerHidden())->toBeTrue();
+});
+
+it('keeps the hidden trigger isolated per table instance', function (): void {
+    $hidden = makeSavedViewsTestTable()->savedViewManagerTriggerHidden();
+    $untouched = makeSavedViewsTestTable();
+
+    expect($hidden->isSavedViewManagerTriggerHidden())->toBeTrue()
+        ->and($untouched->isSavedViewManagerTriggerHidden())->toBeFalse();
+});

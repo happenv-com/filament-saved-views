@@ -68,6 +68,9 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
         /** @var WeakMap<Table, bool|Closure|null> $deferConditions */
         $deferConditions = new WeakMap;
 
+        /** @var WeakMap<Table, bool|Closure|null> $triggerHiddenConditions */
+        $triggerHiddenConditions = new WeakMap;
+
         Table::macro('savedViewManagerLayout', function (SavedViewManagerLayout | Closure | null $layout) use ($layouts): Table {
             /** @var Table $this */
             // @phpstan-ignore varTag.nativeType
@@ -102,6 +105,24 @@ class FilamentSavedViewsServiceProvider extends PackageServiceProvider
             /** @var Table $this */
             // @phpstan-ignore varTag.nativeType
             return (bool) ($this->evaluate($deferConditions[$this] ?? null) ?? false);
+        });
+
+        // For a host that opens the manager from somewhere of its own (a tab, a menu item) by
+        // dispatching `open-modal` with the page's `getSavedViewManagerModalId()`. The manager is then
+        // rendered as a modal / slide-over whatever the layout says — a dropdown cannot be opened
+        // without the button it hangs from — and the toolbar gets no element at all while it is shut.
+        Table::macro('savedViewManagerTriggerHidden', function (bool | Closure $condition = true) use ($triggerHiddenConditions): Table {
+            /** @var Table $this */
+            // @phpstan-ignore varTag.nativeType
+            $triggerHiddenConditions[$this] = $condition;
+
+            return $this;
+        });
+
+        Table::macro('isSavedViewManagerTriggerHidden', function () use ($triggerHiddenConditions): bool {
+            /** @var Table $this */
+            // @phpstan-ignore varTag.nativeType
+            return (bool) ($this->evaluate($triggerHiddenConditions[$this] ?? null) ?? false);
         });
 
         Table::macro('getSavedViewManagerTriggerAction', function () use ($triggerCallbacks): Action {

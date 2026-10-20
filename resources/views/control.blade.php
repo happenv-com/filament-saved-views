@@ -21,8 +21,13 @@
     through `savedViewManagerLayout()` / `savedViewManagerTriggerAction()`,
     mirroring Filament's own column-manager toolbar. The interactive content
     (save input, list, delete) lives in the nested Livewire control.
+
+    With `savedViewManagerTriggerHidden()` the host opens the manager itself (`open-modal` with the
+    page's `getSavedViewManagerModalId()`), so only the modal is rendered: no `.fi-modal-trigger`
+    wrapper, and the modal root is `x-show`n shut, so it takes no place in the toolbar's flex row.
+    A dropdown cannot be opened without its button, hence the modal whatever the layout says.
 --}}
-@if ($layout === SavedViewManagerLayout::Modal || $triggerAction->isModalSlideOver())
+@if ($triggerHidden || $layout === SavedViewManagerLayout::Modal || $triggerAction->isModalSlideOver())
     <x-filament::modal
         :id="$livewireKey . '.manager'"
         :alignment="$triggerAction->getModalAlignment()"
@@ -46,9 +51,11 @@
         wire:key="{{ $livewireKey }}.modal"
         class="fi-fm-saved-view-manager-modal"
     >
-        <x-slot name="trigger">
-            {{ $triggerAction }}
-        </x-slot>
+        @unless ($triggerHidden)
+            <x-slot name="trigger">
+                {{ $triggerAction }}
+            </x-slot>
+        @endunless
 
         {{ $triggerAction->getModalContent() }}
 
