@@ -216,6 +216,9 @@ public function table(Table $table): Table
 ```
 
 ```php
+use Filament\Actions\Action;
+use Illuminate\Support\Js;
+
 Action::make('savedViews')
     ->alpineClickHandler(fn (): string => "\$dispatch('open-modal', { id: " . Js::from($this->getSavedViewManagerModalId()) . ' })');
 ```
