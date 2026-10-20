@@ -241,7 +241,50 @@ trait HasSavedViews
 
         unset($default['per_page']);
 
+        // Filters compare by their own rules, below; every other slice as a saved view does.
+        if (self::comparableSavedViewFilterValue($state['filters'] ?? []) !== self::comparableSavedViewFilterValue($default['filters'])) {
+            return true;
+        }
+
+        unset($state['filters'], $default['filters']);
+
         return self::comparableSavedViewState($state) !== self::comparableSavedViewState($default);
+    }
+
+    /**
+     * A filter value reduced to what it selects.
+     *
+     * Unlike {@see comparableSavedViewValue()}, `false` is kept: a ternary filter at `default(false)`
+     * and the same filter cleared list different records. And a scalar is its text: filling a form
+     * with `default(1)` gives `1` (a ternary's `false` gives `0`), while the same selection restored
+     * from a URL is `'1'` (`'0'`).
+     */
+    protected static function comparableSavedViewFilterValue(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            $value = array_filter(
+                array_map(self::comparableSavedViewFilterValue(...), $value),
+                static fn (mixed $item): bool => $item !== null,
+            );
+
+            if ($value === []) {
+                return null;
+            }
+
+            ksort($value);
+
+            return $value;
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        return ($value === null || $value === '') ? null : $value;
     }
 
     /**
