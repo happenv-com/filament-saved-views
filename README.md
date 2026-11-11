@@ -245,6 +245,10 @@ Publish them with `php artisan vendor:publish --tag="filament-saved-views-transl
 wording or add a language. `tests/Unit/TranslationsTest.php` checks that every locale has exactly the
 keys English has, and that every locale Filament ships has a translation.
 
+## AI assistants (Laravel Boost)
+
+The package ships a [Laravel Boost](https://laravel.com/docs/boost) skill, `filament-saved-views-development`, in `resources/boost/skills/`. `php artisan boost:install` (or `boost:update`) offers it to your coding agent: enabling saved views on a list page, configuring and opening the manager, what a view stores and what it does not, swapping the model (UUID keys, tenants) and testing.
+
 ## Development
 
 ```bash
