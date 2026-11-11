@@ -122,7 +122,7 @@ With the trigger hidden the manager is always a modal (or the slide-over set on 
 `saved_data` (JSON): `filters`, `search`, `column_searches`, `sort`, `grouping`, `per_page`, `columns` (toggled + order) and `columns_reordered`. Filters, search, sort and grouping travel in the URL (Filament's own `#[Url]` properties on `ListRecords`); the rest is applied in `bootedHasSavedViews()` when the page opens with `?savedView=`.
 
 - **Not stored:** the active tab of `getTabs()` (`?tab=`), the current page number, and anything outside the table. A view opened from a list with tabs lands on the default tab.
-- A filter's `default()` matters: `hasSavableTableState()` and the unsaved-changes dot compare against the table's untouched state (defaults applied), not against empty.
+- Two different baselines: `hasSavableTableState()` compares the table with its untouched state (filter `default()`s, default group and page size applied), not with an empty one. The unsaved-changes dot and the "Update this view" button (`hasUnsavedSavedViewChanges()`) compare it with the open view's `saved_data`, and are always false when no view is open.
 - Renaming a resource class, or moving it to another namespace, orphans its views: they are keyed by the resource's FQCN. Migrate the `class` column when you do.
 
 ## Scoping, model and config
@@ -172,8 +172,11 @@ $view = SavedView::query()->where('label', 'Acme orders')->firstOrFail();
 expect($view->class)->toBe(OrderResource::class)
     ->and($view->saved_data['search'])->toBe('acme');
 
-Livewire::withQueryParams(['savedView' => (string) $view->getKey()])
+// A real link comes from getUrlForSavedView(): filters, search, sort and grouping travel in the
+// query string, savedView alone restores only columns, page size and column searches.
+Livewire::withQueryParams(['search' => 'acme', 'savedView' => (string) $view->getKey()])
     ->test(ListOrders::class)
+    ->assertSet('tableSearch', 'acme')
     ->assertSet('savedView', (string) $view->getKey());
 ```
 
