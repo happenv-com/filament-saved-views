@@ -76,6 +76,9 @@ trait HasSavedViews
         $items = [];
 
         foreach ($views as $view) {
+            // activeWhen() replaces isActiveWhen() only since Filament 4.16.1 / 5.11.1, above the
+            // floor composer.json supports; switch once the floor gets there.
+            // @phpstan-ignore method.deprecated
             $items[] = NavigationItem::make($view->label)
                 ->icon(config('filament-happenv-saved-views.icons.item'))
                 ->url($this->getUrlForSavedView($view))
