@@ -2,6 +2,17 @@
 
 All notable changes to `filament-saved-views` are documented in this file. Each section is written automatically from the GitHub release notes when a release is published — do not edit it by hand.
 
+## v1.8.2 - 2026-11-11
+
+<!-- Release notes generated using configuration in .github/release.yml at 1.x -->
+### What's Changed
+
+#### Other
+
+* fix: support Filament 4.16 / 5.11 (Sinhala locale, deprecated method) by @webard in https://github.com/happenv-com/filament-saved-views/pull/21
+
+**Full Changelog**: https://github.com/happenv-com/filament-saved-views/compare/v1.8.1...v1.8.2
+
 ## v1.8.1 - 2026-11-11
 
 <!-- Release notes generated using configuration in .github/release.yml at 1.x -->
